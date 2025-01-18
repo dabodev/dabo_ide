@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from .. import ui
-from ..application import dApp
-from ..dLocalize import _
+import dabo
+from dabo import ui
+from dabo.application import dApp
+from dabo.localization import _
 
-from ..ui import dForm
-from ..ui import dHyperLink
-from ..ui import dSizer
-from ..ui import dStatusBar
-from ..ui import dTextBox
+from dabo.ui import dForm
+from dabo.ui import dHyperLink
+from dabo.ui import dSizer
+from dabo.ui import dStatusBar
+from dabo.ui import dTextBox
 
 
 class HomeDirectoryStatusBar(dStatusBar):

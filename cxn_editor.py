@@ -1,28 +1,31 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys
-import os
 import copy
+import os
+import sys
 
+import cryptography
 
-from ..application import dApp
-from ..dLocalize import _
-from ..lib.utils import ustr
-from ..lib.connParser import createXML
-from ..lib.connParser import importConnections
-from ..lib import utils
-from .. import db
-from .. import application
-from .. import ui
-from ..ui import dButton
-from ..ui import dDropdownList
-from ..ui import dForm
-from ..ui import dGridSizer
-from ..ui import dLabel
-from ..ui import dPanel
-from ..ui import dSizer
-from ..ui import dTextBox
-from . import home_directory_status_bar
+import home_directory_status_bar
+import dabo
+from dabo.application import dApp
+from dabo.localization import _
+from dabo.lib.utils import ustr
+from dabo.lib.connParser import createXML
+from dabo.lib.connParser import importConnections
+from dabo.lib import utils
+from dabo import db
+from dabo import application
+from dabo import ui
+from dabo import settings
+from dabo.ui import dButton
+from dabo.ui import dDropdownList
+from dabo.ui import dForm
+from dabo.ui import dGridSizer
+from dabo.ui import dLabel
+from dabo.ui import dPanel
+from dabo.ui import dSizer
+from dabo.ui import dTextBox
 
 dabo_module = settings.get_dabo_package()
 
@@ -211,19 +214,8 @@ class EditorForm(dForm):
         sz.append(gbsz, 0, "expand", border=20)
         sz.append(btnSizer1, 0, halign="center")
         sz.append(btnSizer2, 0, halign="center")
-        # Only create the 'Set Crypto Key' button if PyCrypto is installed
-        try:
-            from Crypto.Cipher import DES3 as _TEST_DES3
-
-            self._showKeyButton = True
-            del _TEST_DES3
-        except ImportError:
-            self._showKeyButton = False
-        if self._showKeyButton:
-            self.cryptoKeyButton = dButton(
-                self.bg, Caption=_("Set Crypto Key"), OnHit=self.onSetCrypto
-            )
-            btnSizer1.append(self.cryptoKeyButton, 0, border=3)
+        self.cryptoKeyButton = dButton(self.bg, Caption=_("Set Crypto Key"), OnHit=self.onSetCrypto)
+        btnSizer1.append(self.cryptoKeyButton, 0, border=3)
         self.Sizer = dSizer("h")
         self.Sizer.append(self.bg, 1, "expand", halign="center")
         self.Layout()
@@ -278,12 +270,17 @@ class EditorForm(dForm):
             self.updtFromForm()
 
     def _askForKey(self):
-        ret = ui.getString(
-            _("Enter the cryptographic key for your application"),
-            caption=_("Crypto Key"),
+        pw = ui.getString(
+            _("Enter the cryptographic password for your application"),
+            caption=_("Crypto Password"),
             Width=240,
         )
-        return ret
+        salt = ui.getString(
+            _("Enter the cryptographic salt value for your application"),
+            caption=_("Crypto Salt"),
+            Width=240,
+        )
+        return (pw, salt)
 
     def onTest(self, evt):
         self.testConnection()
@@ -369,7 +366,7 @@ class EditorForm(dForm):
                 val = getattr(self, fld)
                 if fld == "password":
                     try:
-                        origVal = self.Crypto.decrypt(dd[fld])
+                        origVal = self.Application.decrypt(dd[fld])
                     except ValueError:
                         # Original crypto key not available
                         origVal = None
@@ -378,24 +375,22 @@ class EditorForm(dForm):
                 if val == origVal:
                     continue
                 if fld == "password":
-                    dd[fld] = self.Crypto.encrypt(val)
+                    dd[fld] = self.Application.encrypt(val)
                 else:
                     dd[fld] = val
 
     def updtToForm(self):
-        """Populate the current values from the connection
-        dictionary.
-        """
+        """Populate the current values from the connection dictionary."""
         if self.currentConn is not None:
             dd = self.connDict[self.currentConn]
             for fld in list(dd.keys()):
                 val = dd[fld]
                 if fld == "password":
                     try:
-                        val = self.Crypto.decrypt(dd[fld])
-                    except ValueError:
+                        val = self.Application.decrypt(dd[fld])
+                    except (ValueError, cryptography.fernet.InvalidToken):
                         # Original crypto key not available
-                        if self._opening and self._showKeyButton:
+                        if self._opening:
                             ui.callAfter(self._getCryptoKey, dd[fld])
                             continue
                         else:
@@ -408,8 +403,9 @@ class EditorForm(dForm):
         key = self._askForKey()
         if key:
             self.Application.CryptoKey = key
-            val = self.Crypto.decrypt(crypted)
+            val = self.Application.decrypt(crypted)
         setattr(self, "password", val)
+        self.update()
 
     def _blankConnection(self):
         return dict.fromkeys(self.connKeys)
@@ -470,8 +466,8 @@ class EditorForm(dForm):
         try:
             dd = self.connDict[self.currentConn]
             if fld == "password":
-                if val != self.Crypto.decrypt(dd["password"]):
-                    dd[fld] = self.Crypto.encrypt(val)
+                if val != self.Application.decrypt(dd["password"]):
+                    dd[fld] = self.Application.encrypt(val)
             else:
                 dd[fld] = val
         except Exception as e:
@@ -582,19 +578,6 @@ class EditorForm(dForm):
                     val["database"] = utils.relativePath(db, self.Application.HomeDirectory)
         return vals
 
-    def _getCrypto(self):
-        try:
-            return self.Application.Crypto
-        except:
-            pass
-
-    Crypto = property(
-        _getCrypto,
-        None,
-        None,
-        _("A reference to the application-supplied encryption object (lib.SimpleCrypt)"),
-    )
-
 
 def run_editor(filepaths=None):
     app = dApp(ignoreScriptDir=True)
@@ -605,17 +588,17 @@ def run_editor(filepaths=None):
     if not filepaths:
         # The form can either edit a new file, or the user can open the file
         # from the form
-        o = EditorForm()
-        o.newFile()
-        o.show()
+        frm = EditorForm()
+        frm.newFile()
+        frm.show()
     else:
         for pth in filepaths:
-            o = EditorForm()
-            o.openFile(file)
-            if o.connFile:
-                o.show()
+            frm = EditorForm()
+            frm.openFile(pth)
+            if frm.connFile:
+                frm.show()
             else:
-                o.close()
+                frm.close()
 
     app.start()
 

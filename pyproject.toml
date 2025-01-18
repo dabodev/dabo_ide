@@ -5,7 +5,17 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "dabo",
     "pillow>=11.0.0",
     "reportlab>=4.2.5",
     "wxpython>=4.2.2",
 ]
+
+[tool.uv]
+dev-dependencies = [
+    "ipython>=8.31.0",
+    "pytest-pudb>=0.7.0",
+]
+
+[tool.uv.sources]
+dabo = { path = "../dabo", editable = true }
