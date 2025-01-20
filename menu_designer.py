@@ -3,12 +3,12 @@
 import os
 import sys
 
-from .. import ui
-from ..dLocalize import _
-from ..application import dApp
-from .. import events
-from ..lib import xmltodict as xtd
-from .MenuDesignerForm import MenuDesignerForm
+from dabo import events
+from dabo import ui
+from dabo.application import dApp
+from dabo.lib import xmltodict as xtd
+from dabo.localization import _
+from MenuDesignerForm import MenuDesignerForm
 
 
 class MenuDesigner(dApp):

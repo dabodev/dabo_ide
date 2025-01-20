@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
 HANDLE_SIZE = 8
-from .. import ui
-from .. import events
 
-from ..ui import dPanel
+import dabo
+from dabo import events
+from dabo import ui
+from dabo.ui import dPanel
 
 
 class DragHandle(dPanel):
-    """The class for all the handles used to indicate the selected control
-    that are dragged to resize the control. It has properties indicating
-    whether it controls resizing the control in the up, right, down or left
-    directions. These values are determined from the name of the handle,
-    which follows a simple naming convention:
+    """
+    The class for all the handles used to indicate the selected control that are dragged to resize
+    the control. It has properties indicating whether it controls resizing the control in the up,
+    right, down or left directions. These values are determined from the name of the handle, which
+    follows a simple naming convention:
         First character: T, M, B => Top, Middle or Bottom
         Second character: L, M, R = > Left, Middle or Right
-    When the contol is dragged, it passes the event up to its parent. The
-    parent object then determines the affected control, and passes the
-    event on to that control.
+
+    When the contol is dragged, it passes the event up to its parent. The parent object then
+    determines the affected control, and passes the event on to that control.
     """
 
     def __init__(self, parent, handleName):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os
 import inspect
+import os
 
 from .. import ui
 from ..application import dApp

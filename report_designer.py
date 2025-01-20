@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys
-import os
 import copy
+import os
+import sys
+
+from .. import events
 from .. import icons
 from .. import ui
 from ..application import dApp
-from .. import events
 from ..dReportWriter import dReportWriter
 from ..lib.reportWriter import *
-from ..dLocalize import _
 from ..lib.utils import ustr
-from . import class_designer_prop_sheet
-
+from ..localization import _
 from ..ui import dEditor
 from ..ui import dFont
 from ..ui import dForm
@@ -21,10 +20,10 @@ from ..ui import dKeys
 from ..ui import dLabel
 from ..ui import dMenu
 from ..ui import dPageFrame
-from ..ui import dPageFrame
 from ..ui import dPanel
 from ..ui import dScrollPanel
 from ..ui import dTreeView
+from . import class_designer_prop_sheet
 
 NEW_FILE_CAPTION = "< New >"
 SHORTEN_EXPRESSIONS_FOR_DISPLAY = False
@@ -438,6 +437,7 @@ def DesignerController():
 
         def ReportObjectSelection(self):
             import pickle
+
             import wx
 
             rw = self.ActiveEditor._rw
@@ -2031,7 +2031,7 @@ class ReportDesigner(dScrollPanel):
                 break
             if os.path.exists(fname):
                 r = dabo.ui.areYouSure(
-                    "File '%s' already exists. " "Do you want to overwrite it?" % fname,
+                    "File '%s' already exists. Do you want to overwrite it?" % fname,
                     defaultNo=True,
                 )
 

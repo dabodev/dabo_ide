@@ -2,7 +2,7 @@
 
 
 from ..application import dApp
-from ..dLocalize import _
+from ..localization import _
 from version import __version__
 
 

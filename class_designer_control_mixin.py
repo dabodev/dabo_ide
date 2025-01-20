@@ -1,71 +1,73 @@
 # -*- coding: utf-8 -*-
 import os
 
-from .. import ui
-from ..lib import utils as libutils
-from ..dLocalize import _
-from ..lib.utils import ustr
-from .. import events
-from .. import application
-from .. import dColors
-from ..ui import dKeys
-from ..ui import dialogs
-from ..ui import dBitmap
-from ..ui import dBitmapButton
-from ..ui import dButton
-from ..ui import dCheckBox
-from ..ui import dCheckList
-from ..ui import dColumn
-from ..ui import dComboBox
-from ..ui import dDataControlMixin
-from ..ui import dDialog
-from ..ui import dDropdownList
-from ..ui import dEditBox
-from ..ui import dEditor
-from ..ui import dForm
-from ..ui import dFormMain
-from ..ui import dGauge
-from ..ui import dGrid
-from ..ui import dHtmlBox
-from ..ui import dImage
-from ..ui import dLabel
-from ..ui import dLed
-from ..ui import dLine
-from ..ui import dListBox
-from ..ui import dListControl
-from ..ui import dMaskedTextBox
-from ..ui import dMediaControl
-from ..ui import dMenu
-from ..ui import dMenuBar
-from ..ui import dMenuItem
-from ..ui import dPage
-from ..ui import dPageFrame
-from ..ui import dPageFrameMixin
-from ..ui import dPageFrameNoTabs
-from ..ui import dPageList
-from ..ui import dPageSelect
-from ..ui import dPageStyled
-from ..ui import dPanel
-from ..ui import dRadioList
-from ..ui import dScrollPanel
-from ..ui import dShell
-from ..ui import dSlidePanel
-from ..ui import dSlidePanelControl
-from ..ui import dSlider
-from ..ui import dSpinner
-from ..ui import dSplitter
-from ..ui import dStatusBar
-from ..ui import dTextBox
-from ..ui import dTimer
-from ..ui import dToggleButton
-from ..ui import dTreeView
-from .class_designer_components import LayoutPanel
-from .class_designer_components import LayoutSizer
-from .class_designer_components import LayoutBorderSizer
-from .class_designer_components import LayoutGridSizer
-from .class_designer_components import LayoutSaverMixin
-from .class_designer_components import classFlagProp
-from .class_designer_exceptions import PropertyUpdateException
+from dabo import application
+from dabo import color_tools
+from dabo import events
+from dabo import settings
+from dabo import ui
+from dabo.lib import utils as libutils
+from dabo.lib.utils import ustr
+from dabo.localization import _
+from dabo.ui import dBitmap
+from dabo.ui import dBitmapButton
+from dabo.ui import dButton
+from dabo.ui import dCheckBox
+from dabo.ui import dCheckList
+from dabo.ui import dColumn
+from dabo.ui import dComboBox
+from dabo.ui import dDataControlMixin
+from dabo.ui import dDialog
+from dabo.ui import dDropdownList
+from dabo.ui import dEditBox
+from dabo.ui import dEditor
+from dabo.ui import dForm
+from dabo.ui import dFormMain
+from dabo.ui import dGauge
+from dabo.ui import dGrid
+from dabo.ui import dHtmlBox
+from dabo.ui import dialogs
+from dabo.ui import dImage
+from dabo.ui import dKeys
+from dabo.ui import dLabel
+from dabo.ui import dLed
+from dabo.ui import dLine
+from dabo.ui import dListBox
+from dabo.ui import dListControl
+from dabo.ui import dMaskedTextBox
+from dabo.ui import dMediaControl
+from dabo.ui import dMenu
+from dabo.ui import dMenuBar
+from dabo.ui import dMenuItem
+from dabo.ui import dPage
+from dabo.ui import dPageFrame
+from dabo.ui import dPageFrameMixin
+from dabo.ui import dPageFrameNoTabs
+from dabo.ui import dPageList
+from dabo.ui import dPageSelect
+from dabo.ui import dPageStyled
+from dabo.ui import dPanel
+from dabo.ui import dRadioList
+from dabo.ui import dScrollPanel
+from dabo.ui import dShell
+from dabo.ui import dSlidePanel
+from dabo.ui import dSlidePanelControl
+from dabo.ui import dSlider
+from dabo.ui import dSpinner
+from dabo.ui import dSplitter
+from dabo.ui import dStatusBar
+from dabo.ui import dTextBox
+from dabo.ui import dTimer
+from dabo.ui import dToggleButton
+from dabo.ui import dTreeView
+
+from class_designer_components import LayoutBorderSizer
+from class_designer_components import LayoutGridSizer
+from class_designer_components import LayoutPanel
+from class_designer_components import LayoutSaverMixin
+from class_designer_components import LayoutSizer
+from class_designer_components import classFlagProp
+from class_designer_exceptions import PropertyUpdateException
 
 dabo_module = settings.get_dabo_package()
 
@@ -686,7 +688,6 @@ class ClassDesignerControlMixin(LayoutSaverMixin):
             try:
                 ret = self.__class__.superControl._getChildren(self)
             except:
-                print("NO SUPER CLASS FOUND!!!!!")
                 ret = []
         if isinstance(self, dialogs.WizardPage):
             # Skip the title and separator line.
@@ -1411,7 +1412,7 @@ class ClassDesignerControlMixin(LayoutSaverMixin):
         if self._constructed():
             if isinstance(val, str):
                 try:
-                    val = dColors.colorTupleFromName(val)
+                    val = color_tools.colorTupleFromName(val)
                 except:
                     pass
             self._hiliteBorderColor = val

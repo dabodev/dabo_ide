@@ -4,15 +4,15 @@
 import codecs
 import os
 
-from .. import ui
-
-from ..dLocalize import _
-from ..lib.utils import ustr
-from .. import events
 import dabo.lib.xmltodict as xtd
-from ClassDesignerExceptions import PropertyUpdateException
 import MenuPanel
+from ClassDesignerExceptions import PropertyUpdateException
 from MenuDesignerPropForm import MenuPropForm
+
+from .. import events
+from .. import ui
+from ..lib.utils import ustr
+from ..localization import _
 from ..ui import dButton
 from ..ui import dForm
 from ..ui import dLabel

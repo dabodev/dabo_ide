@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 
-from .. import events
-from .. import ui
-from ..dLocalize import _
-from .class_designer_components import LayoutSpacerPanel
+from dabo import events
+from dabo import ui
+from dabo.localization import _
+from dabo.ui import dBorderSizer
+from dabo.ui import dCheckBox
+from dabo.ui import dDropdownList
+from dabo.ui import dForm
+from dabo.ui import dGridSizer
+from dabo.ui import dLabel
+from dabo.ui import dPageFrameNoTabs
+from dabo.ui import dPanel
+from dabo.ui import dSizer
+from dabo.ui import dSpinner
+from dabo.ui import dToolForm
 
-from ..ui import dBorderSizer
-from ..ui import dCheckBox
-from ..ui import dDropdownList
-from ..ui import dForm
-from ..ui import dGridSizer
-from ..ui import dLabel
-from ..ui import dPageFrameNoTabs
-from ..ui import dPanel
-from ..ui import dSizer
-from ..ui import dSpinner
-from ..ui import dToolForm
+from class_designer_components import LayoutSpacerPanel
 
 
 class ContentBoxSizerPanel(dPanel):

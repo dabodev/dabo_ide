@@ -1,36 +1,38 @@
 # -*- coding: utf-8 -*-
 import os
 import pydoc
-from .. import icons
-from .. import ui
-from ..dLocalize import _
-from ..ui import dKeys as dKeys
-from .. import events
-from .. import application
-from .class_designer_components import LayoutPanel
-from .class_designer_components import LayoutSpacerPanel
-from .class_designer_components import LayoutSizer
-from .class_designer_components import LayoutBorderSizer
-from .class_designer_components import LayoutGridSizer
-from .class_designer_exceptions import PropertyUpdateException
 
-from ..ui import dBorderSizer
-from ..ui import dButton
-from ..ui import dCheckList
-from ..ui import dColumn
-from ..ui import dDialog
-from ..ui import dDropdownList
-from ..ui import dEditableList
-from ..ui import dEditBox
-from ..ui import dGrid
-from ..ui import dImage
-from ..ui import dLabel
-from ..ui import dLine
-from ..ui import dOkCancelDialog
-from ..ui import dPanel
-from ..ui import dSizer
-from ..ui import dSplitter
-from ..ui.dialogs import HotKeyEditor
+from dabo import application
+from dabo import events
+from dabo import icons
+from dabo import settings
+from dabo import ui
+from dabo.localization import _
+from dabo.ui import dBorderSizer
+from dabo.ui import dButton
+from dabo.ui import dCheckList
+from dabo.ui import dColumn
+from dabo.ui import dDialog
+from dabo.ui import dDropdownList
+from dabo.ui import dEditableList
+from dabo.ui import dEditBox
+from dabo.ui import dGrid
+from dabo.ui import dImage
+from dabo.ui import dKeys as dKeys
+from dabo.ui import dLabel
+from dabo.ui import dLine
+from dabo.ui import dOkCancelDialog
+from dabo.ui import dPanel
+from dabo.ui import dSizer
+from dabo.ui import dSplitter
+from dabo.ui.dialogs import HotKeyEditor
+
+from class_designer_components import LayoutBorderSizer
+from class_designer_components import LayoutGridSizer
+from class_designer_components import LayoutPanel
+from class_designer_components import LayoutSizer
+from class_designer_components import LayoutSpacerPanel
+from class_designer_exceptions import PropertyUpdateException
 
 dabo_module = settings.get_dabo_package()
 
@@ -574,6 +576,7 @@ class PropSheet(dPanel):
                 self.Sizer.append1x(self.editor)
 
             def onSidesChanged(self, evt):
+                # Value is a tuple here, so convert to a list
                 newVal = list(self.editor.Value)
                 if "All" in newVal:
                     if "All" in self._currVal:
@@ -754,7 +757,7 @@ class PropertyGrid(dGrid):
                     print("PROPNAME", prop_name)
                     print("SELEC", selection)
                     dabo_module.error(
-                        _("Property Grid out of sync for property " "'%s' of object '%'")
+                        _("Property Grid out of sync for property '%s' of object '%'")
                         % (prop_name, selection)
                     )
                 continue

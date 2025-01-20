@@ -4,7 +4,6 @@ import dabo
 from dabo import ui
 from dabo.application import dApp
 from dabo.localization import _
-
 from dabo.ui import dForm
 from dabo.ui import dHyperLink
 from dabo.ui import dSizer

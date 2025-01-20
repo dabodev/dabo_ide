@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-from .. import ui
-from ..dLocalize import _
 from .. import events
-from .class_designer_prop_sheet import PropSheet
-from .class_designer_tree_sheet import TreeSheet
+from .. import ui
+from ..localization import _
 from ..ui import dForm
 from ..ui import dPageFrameNoTabs
 from ..ui import dPanel
 from ..ui import dSizer
 from ..ui import dTextBox
 from ..ui import dToggleButton
+from .class_designer_prop_sheet import PropSheet
+from .class_designer_tree_sheet import TreeSheet
 
 
 class MenuPropForm(dForm):

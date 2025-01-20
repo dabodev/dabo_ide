@@ -2,20 +2,21 @@
 import sys
 
 if __name__ == "__main__":
-    sys.exit("This isn't meant to be run stand-alone. Please run ide/ClassDesigner.py instead.")
+    sys.exit("This isn't meant to be run stand-alone. Please run `class_designer.py` instead.")
 import os
 import time
 
-from ... import application
-from ... import ui
-from ... import events
-from ...application import dApp
-from ...dLocalize import _
-from ...ide.class_designer_components import LayoutSizer
-from ...ide.class_designer_components import LayoutGridSizer
-from ...ui.dialogs import Wizard as Wizard
-from ...ui.dialogs import WizardPage as WizardPage
-from . import qlw_image_data as ImageData
+from dabo import application
+from dabo import events
+from dabo import ui
+from dabo.application import dApp
+from dabo.localization import _
+from dabo.ui.dialogs import Wizard as Wizard
+from dabo.ui.dialogs import WizardPage as WizardPage
+
+from class_designer_components import LayoutGridSizer
+from class_designer_components import LayoutSizer
+from wizards import qlw_image_data as ImageData
 
 
 class PgConnectionSelect(WizardPage):

@@ -1,31 +1,31 @@
 # -*- coding: utf-8 -*-
 
-from .. import ui
-from ..dLocalize import _
-from ..lib.utils import ustr
-from .. import events
-from .class_designer_prop_sheet import PropSheet
-from .class_designer_tree_sheet import TreeSheet
-from .class_designer_method_sheet import MethodSheet
-from .class_designer_object_property_sheet import ObjectPropertySheet
-from .class_designer_components import LayoutPanel
-from .class_designer_components import LayoutSpacerPanel
-from .class_designer_components import LayoutSizer
-from .class_designer_components import LayoutGridSizer
-from . import class_designer_menu
+from dabo import events
+from dabo import ui
+from dabo.lib.utils import ustr
+from dabo.localization import _
+from dabo.ui import dBorderSizer
+from dabo.ui import dColumn
+from dabo.ui import dForm
+from dabo.ui import dPageFrameNoTabs
+from dabo.ui import dPanel
+from dabo.ui import dSizer
+from dabo.ui import dSizerMixin
+from dabo.ui import dSlidePanel
+from dabo.ui import dSlidePanelControl
+from dabo.ui import dTextBox
+from dabo.ui import dToggleButton
+from dabo.ui import dTreeView
 
-from ..ui import dBorderSizer
-from ..ui import dColumn
-from ..ui import dForm
-from ..ui import dPageFrameNoTabs
-from ..ui import dPanel
-from ..ui import dSizer
-from ..ui import dSizerMixin
-from ..ui import dSlidePanel
-from ..ui import dSlidePanelControl
-from ..ui import dTextBox
-from ..ui import dToggleButton
-from ..ui import dTreeView
+import class_designer_menu
+from class_designer_components import LayoutGridSizer
+from class_designer_components import LayoutPanel
+from class_designer_components import LayoutSizer
+from class_designer_components import LayoutSpacerPanel
+from class_designer_method_sheet import MethodSheet
+from class_designer_object_property_sheet import ObjectPropertySheet
+from class_designer_prop_sheet import PropSheet
+from class_designer_tree_sheet import TreeSheet
 
 
 class PemForm(dForm):

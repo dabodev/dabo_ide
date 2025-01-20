@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
-from .. import events
-from .. import ui
-
-from ..dLocalize import _
-from ..ui import dCheckBox
-from ..ui import dDropdownList
-from ..ui import dGridSizer
-from ..ui import dLabel
-from ..ui import dOkCancelDialog
-from ..ui import dSizer
-from ..ui import dTextBox
+from dabo import events
+from dabo import ui
+from dabo.localization import _
+from dabo.ui import dCheckBox
+from dabo.ui import dDropdownList
+from dabo.ui import dGridSizer
+from dabo.ui import dLabel
+from dabo.ui import dOkCancelDialog
+from dabo.ui import dSizer
+from dabo.ui import dTextBox
 
 
 class ClassDesignerCustomPropertyDialog(dOkCancelDialog):

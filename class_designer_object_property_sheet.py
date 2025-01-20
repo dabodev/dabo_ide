@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from ..dLocalize import _
-from .. import events
-from .class_designer_components import LayoutPanel
-from .class_designer_components import LayoutBasePanel
-from .class_designer_components import LayoutSpacerPanel
-from .class_designer_components import LayoutSizer
-from .class_designer_components import LayoutBorderSizer
-from .class_designer_components import LayoutGridSizer
+from dabo import events
+from dabo.localization import _
+from dabo.ui import dButton
+from dabo.ui import dColumn
+from dabo.ui import dGrid
+from dabo.ui import dPanel
+from dabo.ui import dSizer
 
-from ..ui import dButton
-from ..ui import dColumn
-from ..ui import dGrid
-from ..ui import dPanel
-from ..ui import dSizer
+from class_designer_components import LayoutBasePanel
+from class_designer_components import LayoutBorderSizer
+from class_designer_components import LayoutGridSizer
+from class_designer_components import LayoutPanel
+from class_designer_components import LayoutSizer
+from class_designer_components import LayoutSpacerPanel
 
 
 class ObjectPropertySheet(dPanel):

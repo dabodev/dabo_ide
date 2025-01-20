@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from ..dException import dException
+from dabo.exceptions import dException
 
 
 class PropertyUpdateException(dException):

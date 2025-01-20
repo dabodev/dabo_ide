@@ -5,19 +5,17 @@ import os
 import sys
 
 import cryptography
-
-import home_directory_status_bar
 import dabo
+from dabo import application
+from dabo import db
+from dabo import settings
+from dabo import ui
 from dabo.application import dApp
-from dabo.localization import _
-from dabo.lib.utils import ustr
+from dabo.lib import utils
 from dabo.lib.connParser import createXML
 from dabo.lib.connParser import importConnections
-from dabo.lib import utils
-from dabo import db
-from dabo import application
-from dabo import ui
-from dabo import settings
+from dabo.lib.utils import ustr
+from dabo.localization import _
 from dabo.ui import dButton
 from dabo.ui import dDropdownList
 from dabo.ui import dForm
@@ -26,6 +24,8 @@ from dabo.ui import dLabel
 from dabo.ui import dPanel
 from dabo.ui import dSizer
 from dabo.ui import dTextBox
+
+import home_directory_status_bar
 
 dabo_module = settings.get_dabo_package()
 

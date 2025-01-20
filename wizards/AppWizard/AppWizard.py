@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys
 import os
+import sys
 import time
 import traceback
 
+from .. import events
 from .. import ui
 from ..application import dApp
-from ..dLocalize import _
-from ..lib.utils import ustr
-from .. import events
 from ..lib.connParser import createXML
 from ..lib.untabify import process as untabify
-from ..ui.dialogs import WizardPage
-from ..ui.dialogs import Wizard
+from ..lib.utils import ustr
+from ..localization import _
 from ..ui import dLabel
 from ..ui import dSizer
+from ..ui.dialogs import Wizard
+from ..ui.dialogs import WizardPage
 
 
 def getSafeTableName(tableName):

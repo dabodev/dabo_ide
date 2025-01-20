@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .. import ui
-from .. import events
-from ..dLocalize import _
+from dabo import events
+from dabo import ui
+from dabo.lib import xmltodict as xtd
 from dabo.lib.propertyHelperMixin import _DynamicList
-from ..lib.utils import ustr
-import dabo.lib.xmltodict as xtd
-from .menu_designer_components import MenuSaverMixin
+from dabo.lib.utils import ustr
+from dabo.localization import _
+from dabo.ui import dLabel
+from dabo.ui import dLine
+from dabo.ui import dMenu
+from dabo.ui import dPanel
+from dabo.ui import dSizerH
+from dabo.ui import dSizerV
 
-from ..ui import dLabel
-from ..ui import dLine
-from ..ui import dMenu
-from ..ui import dPanel
-from ..ui import dSizerH
-from ..ui import dSizerV
+from menu_designer_components import MenuSaverMixin
 
 FONT_SIZE_DIFF = 2
 VBASE_BACKCOLOR = "#eeeeee"
@@ -555,7 +555,7 @@ class MenuBarPanel(AbstractMenuPanel):
         menuExists = bool(self.Children)
         if menuExists:
             if not dabo.ui.areYouSure(
-                _("Proceeding will destroy the exising menu. " "Do you really want to do that?"),
+                _("Proceeding will destroy the exising menu. Do you really want to do that?"),
                 "Menu Exists",
                 defaultNo=True,
                 cancelButton=False,

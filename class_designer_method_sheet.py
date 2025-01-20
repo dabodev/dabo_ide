@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-from .. import ui
-from ..dLocalize import _
-from .. import events
-
-from ..ui import dListControl
-from ..ui import dPanel
-from ..ui import dSizer
+from dabo import events
+from dabo import ui
+from dabo.localization import _
+from dabo.ui import dListControl
+from dabo.ui import dPanel
+from dabo.ui import dSizer
 
 
 class MethodSheet(dPanel):

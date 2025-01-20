@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ..dLocalize import _
+from ..localization import _
 from .Base import Base
 
 

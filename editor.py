@@ -1,41 +1,36 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-import os
-import os.path
-import keyword
 import code
 import inspect
+import keyword
 import operator
+import os
+import os.path
+import subprocess
+import sys
 
-use_subprocess = True
-try:
-    import subprocess
-except ImportError:
-    use_subprocess = False
-
-from .. import ui
-from ..application import dApp
-from .. import events
-from ..dLocalize import _
-from ..lib.reportUtils import getTempFile
-from ..ui import dBaseMenuBar
-from ..ui import dBitmapButton
-from ..ui import dDropdownList
-from ..ui import dEditBox
-from ..ui import dEditor
-from ..ui import dForm
-from ..ui import dImage
-from ..ui import dLabel
-from ..ui import dMenu
-from ..ui import dOkCancelDialog
-from ..ui import dPage
-from ..ui import dPageFrame
-from ..ui import dPanel
-from ..ui import dSizer
-from ..ui import dSplitter
-from ..ui import dTextBox
+from dabo import events
+from dabo import ui
+from dabo.application import dApp
+from dabo.lib.reportUtils import getTempFile
+from dabo.localization import _
+from dabo.ui import dBaseMenuBar
+from dabo.ui import dBitmapButton
+from dabo.ui import dDropdownList
+from dabo.ui import dEditBox
+from dabo.ui import dEditor
+from dabo.ui import dForm
+from dabo.ui import dImage
+from dabo.ui import dLabel
+from dabo.ui import dMenu
+from dabo.ui import dOkCancelDialog
+from dabo.ui import dPage
+from dabo.ui import dPageFrame
+from dabo.ui import dPanel
+from dabo.ui import dSizer
+from dabo.ui import dSplitter
+from dabo.ui import dTextBox
 
 
 class EditPageSplitter(dSplitter):
@@ -1057,23 +1052,13 @@ class EditorForm(dForm):
         fname = getTempFile(ext="py")
         ed.saveFile(fname, force=True, isTmp=True)
 
-        # Find out if we will use pythonw or just python:
-        if "linux" in sys.platform:
-            cmd = "python"
-        else:
-            cmd = "pythonw"
-        if use_subprocess:
-            # The Echo hack:
-            self.pgfEditor.SelectedPage.outputText = ""
-            self.pgfEditor.SelectedPage.p = subprocess.Popen(
-                (cmd, fname),
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-        else:
-            # Use the old way
-            os.system("%s %s" % (cmd, fname))
+        self.pgfEditor.SelectedPage.outputText = ""
+        self.pgfEditor.SelectedPage.p = subprocess.Popen(
+            ("python", fname),
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
 
     def onViewZoomIn(self, evt):
         ed = self.CurrentEditor

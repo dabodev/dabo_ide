@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-from .. import ui
-from ..dLocalize import _
-from .. import events
-from ..ui import makeDynamicProperty
-from ..ui import makeProxyProperty
 
-from ..ui import dBitmap
-from ..ui import dForm
-from ..ui import dPanel
+from dabo import events
+from dabo import ui
+from dabo.localization import _
+from dabo.ui import dBitmap
+from dabo.ui import dForm
+from dabo.ui import dPanel
+from dabo.ui import makeDynamicProperty
+from dabo.ui import makeProxyProperty
 
 
 class MenuSaverMixin(object):
@@ -176,7 +176,7 @@ class CaptionPanel(MenuSaverMixin, dPanel):
             self.Width = calc
 
     def positionHotKeyText(self):
-        "This is the function for the DynamicXPos property of the HotKey." ""
+        "This is the function for the DynamicXPos property of the HotKey."
         hkt = self._hotKeyText
         wd = dabo.ui.fontMetricFromDrawObject(hkt)[0]
         margin = 10

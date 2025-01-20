@@ -1,53 +1,54 @@
 # -*- coding: utf-8 -*-
+import codecs
 import os
+import random
 import sys
 import time
-import random
-import codecs
 
-from .. import ui
-from ..dLocalize import _
-from ..lib.utils import ustr
-from ..lib import xmltodict as xtd
-from ..lib import DesignerUtils
-from .. import events
-from . import class_designer_menu
-from .drag_handle import DragHandle
-from .wizards.quick_layout_wizard import QuickLayoutWizard
-from .class_designer_control_mixin import ClassDesignerControlMixin as dcm
-from .class_designer_components import LayoutPanel
-from .class_designer_components import LayoutBasePanel
-from .class_designer_components import LayoutSpacerPanel
-from .class_designer_components import LayoutSizer
-from .class_designer_components import LayoutBorderSizer
-from .class_designer_components import LayoutGridSizer
-from .class_designer_components import LayoutSaverMixin
-from .class_designer_components import NoSizerBasePanel
-from .class_designer_components import classFlagProp
+import dabo
+from dabo import events
+from dabo import ui
+from dabo.lib import DesignerUtils
+from dabo.lib import xmltodict as xtd
+from dabo.lib.utils import ustr
+from dabo.localization import _
+from dabo.ui import dButton
+from dabo.ui import dCheckBox
+from dabo.ui import dComboBox
+from dabo.ui import dDialog
+from dabo.ui import dDockForm
+from dabo.ui import dForm
+from dabo.ui import dGridSizer
+from dabo.ui import dKeys
+from dabo.ui import dLabel
+from dabo.ui import dListControl
+from dabo.ui import dMenu
+from dabo.ui import dOkCancelDialog
+from dabo.ui import dPanel
+from dabo.ui import dRadioList
+from dabo.ui import dSizer
+from dabo.ui import dSpinner
+from dabo.ui import dSplitter
+from dabo.ui import dStandardButtonDialog
+from dabo.ui import dStatusBar
+from dabo.ui import dTextBox
+from dabo.ui import dToolForm
+from dabo.ui import dTreeView
+from dabo.ui.dialogs import Wizard
 
-from ..ui import dKeys
-from ..ui import dButton
-from ..ui import dCheckBox
-from ..ui import dComboBox
-from ..ui import dDialog
-from ..ui import dDockForm
-from ..ui import dForm
-from ..ui import dGridSizer
-from ..ui import dLabel
-from ..ui import dListControl
-from ..ui import dMenu
-from ..ui import dOkCancelDialog
-from ..ui import dPanel
-from ..ui import dRadioList
-from ..ui import dSizer
-from ..ui import dSpinner
-from ..ui import dSplitter
-from ..ui import dStandardButtonDialog
-from ..ui import dStatusBar
-from ..ui import dTextBox
-from ..ui import dToolForm
-from ..ui import dTreeView
-from ..ui.dialogs import Wizard
+import class_designer_menu
+from class_designer_components import LayoutBasePanel
+from class_designer_components import LayoutBorderSizer
+from class_designer_components import LayoutGridSizer
+from class_designer_components import LayoutPanel
+from class_designer_components import LayoutSaverMixin
+from class_designer_components import LayoutSizer
+from class_designer_components import LayoutSpacerPanel
+from class_designer_components import NoSizerBasePanel
+from class_designer_components import classFlagProp
+from class_designer_control_mixin import ClassDesignerControlMixin as dcm
+from drag_handle import DragHandle
+from wizards.quick_layout_wizard import QuickLayoutWizard
 
 
 class ClassDesignerFormMixin(LayoutSaverMixin):
@@ -987,33 +988,6 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
                     if hasattr(obj, "showContainingPage"):
                         break
         obj.showContainingPage()
-
-    #     def getControlClass(self, base):
-    #         class controlMix(dcm, base):
-    #             _superBase = base
-    #             _superMixin = dcm
-    #             def __init__(self, *args, **kwargs):
-    #                 if hasattr(base, "__init__"):
-    #                     apply(base.__init__,(self,) + args, kwargs)
-    #                 parent = args[0]
-    #                 dcm.__init__(self, parent, **kwargs)
-    #         return controlMix
-
-    #    def close(self):
-    #         # Needed to avoid resizing errors when quitting
-    #         self.Controller.isClosing = True
-    #         super(ClassDesignerFormMixin, self).close()
-
-    #    def onSizePosChg(self, evt):
-    #         if self.controlPanel and self.mainControl:
-    #             self.controlPanel.Size = self.mainControl.Size
-    #             self.Layout()
-    #         self.Controller.PropSheet.updatePropVal( ("Left", "Right", "Top", "Bottom",
-    #                 "Size", "Height", "Width", "Position") )
-
-    #    def updatePropVal(self, valNames):
-    #         """Pass-through method"""
-    #         self.Controller.PropSheet.updatePropVal(valNames)
 
     def redrawHandles(self, ctls, showEm=True):
         if self.UseSizers:

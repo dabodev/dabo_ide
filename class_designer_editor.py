@@ -1,24 +1,25 @@
 # -*- coding: utf-8 -*-
 import re
+
 import six
+from dabo import application
+from dabo import events
+from dabo import settings
+from dabo import ui
+from dabo.lib.utils import ustr
+from dabo.localization import _
+from dabo.ui import dBitmapButton
+from dabo.ui import dButton
+from dabo.ui import dDropdownList
+from dabo.ui import dEditor
+from dabo.ui import dForm
+from dabo.ui import dLabel
+from dabo.ui import dLine
+from dabo.ui import dMenu
+from dabo.ui import dPanel
+from dabo.ui import dSizer
 
-from .. import ui
-from .. import events
-from .. import application
-from ..dLocalize import _
-from ..lib.utils import ustr
-from . import class_designer_menu
-
-from ..ui import dBitmapButton
-from ..ui import dButton
-from ..ui import dDropdownList
-from ..ui import dEditor
-from ..ui import dForm
-from ..ui import dLabel
-from ..ui import dLine
-from ..ui import dMenu
-from ..ui import dPanel
-from ..ui import dSizer
+import class_designer_menu
 
 dabo_module = settings.get_dabo_package()
 
@@ -897,6 +898,6 @@ if __name__ == "__main__":
     print("=" * 66)
     print(
         "This is the file that implements the Python editor for the Class Designer."
-        + "You cannot run it directly. Please run 'ClassDesigner.py' instead."
+        + "You cannot run it directly. Please run 'class_designer.py' instead."
     )
     print("=" * 66)
