@@ -736,10 +736,8 @@ class PropertyGrid(dGrid):
         except KeyError as e:
             return None
 
-    #             print "PROP DICT ERROR: >%s<, row=%s" % (prop, row)
-
     def fillGrid(self, force=False):
-        super(PropertyGrid, self).fillGrid(force)
+        super().fillGrid(force)
         self.refresh()
         # Set the renderers and editors manually by cell
         if not self.Controller.Selection:

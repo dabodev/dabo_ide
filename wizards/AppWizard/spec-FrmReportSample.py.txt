@@ -18,14 +18,14 @@ class FrmReportSample(FrmReportBase):
     def initProperties(self):
         app = self.Application
         self.ReportName = _("Sample Report")
-        super(FrmReportSample, self).initProperties()
+        super().initProperties()
         self.ReportForm = os.path.join(app.HomeDirectory, "reports/sampleReport.rfxml")
         self.DataSetFunction = app.db.getSampleDataSet
 
 
     def addControls(self):
         """Add any controls here, such as record selection choices."""
-        super(FrmReportSample, self).addControls()
+        super().addControls()
 
 
     def requery(self):

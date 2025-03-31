@@ -95,7 +95,7 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
         # they are being modified on a design surface
         # or run interactively.
         self.isDesignerForm = True
-        return super(ClassDesignerFormMixin, self)._beforeInit(pre)
+        return super()._beforeInit(pre)
 
     def afterInit(self):
         self._defaultLeft = 30
@@ -111,13 +111,13 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
         self.refresh()
 
     def bringToFront(self):
-        super(ClassDesignerFormMixin, self).bringToFront()
+        super().bringToFront()
 
     def saveState(self):
         self._savedState = self._getSavedState()
 
     def restoreSizeAndPosition(self):
-        super(ClassDesignerFormMixin, self).restoreSizeAndPosition()
+        super().restoreSizeAndPosition()
         self.saveState()
 
     def _getSavedState(self):
@@ -341,7 +341,7 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
 
     def refresh(self, interval=None):
         self.clear()
-        super(ClassDesignerFormMixin, self).refresh(interval=interval)
+        super().refresh(interval=interval)
 
     def onResize(self, evt):
         ui.callAfterInterval(100, self.refresh)
@@ -687,7 +687,7 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
         if isinstance(self, Wizard):
             ret = "ui.dialogs.Wizard"
         else:
-            ret = super(ClassDesignerFormMixin, self).getClass()
+            ret = super().getClass()
         return ret
 
     def _extractCodeFromPropDict(self, pd, cd=None, prntName=None):
@@ -777,7 +777,7 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
             frm.bindEvent(events.Close, __dlgRelease)
 
     def layout(self):
-        super(ClassDesignerFormMixin, self).layout()
+        super().layout()
         # This seems to clear up some ghost pixels that get left behind
         # in the top left corner of the form.
         self.ClearBackground()
@@ -1124,7 +1124,7 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
             # This is ignored in the Children prop
             self.mainPanel.iterateCall(funcName, *args, **kwargs)
         else:
-            super(ClassDesignerFormMixin, self).iterateCall(funcName, *args, **kwargs)
+            super().iterateCall(funcName, *args, **kwargs)
 
     def onControlLeftDown(self, evt):
         obj = evt.EventObject

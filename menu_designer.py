@@ -18,9 +18,7 @@ class MenuDesigner(dApp):
     isDesigner = True
 
     def __init__(self, clsFile=""):
-        super(MenuDesigner, self).__init__(
-            showSplashScreen=False, splashTimeout=10, ignoreScriptDir=True
-        )
+        super().__init__(showSplashScreen=False, splashTimeout=10, ignoreScriptDir=True)
 
 
 def main():

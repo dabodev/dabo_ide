@@ -29,7 +29,7 @@ class AppWizardPage(WizardPage):
 
 class PageIntro(AppWizardPage):
     def __init__(self, parent, Caption=_("Introduction")):
-        super(PageIntro, self).__init__(parent=parent, Caption=Caption)
+        super().__init__(parent=parent, Caption=Caption)
 
     def createBody(self):
         txt = _(
@@ -55,7 +55,7 @@ class PageIntro(AppWizardPage):
 
 class PageDatabase(AppWizardPage):
     def __init__(self, parent, Caption=_("Database Parameters")):
-        super(PageDatabase, self).__init__(parent=parent, Caption=Caption)
+        super().__init__(parent=parent, Caption=Caption)
 
     def createBody(self):
         self.embeddedDbTypes = ("SQLite",)
@@ -354,7 +354,7 @@ class PageDatabase(AppWizardPage):
 
 class PageTableSelection(AppWizardPage):
     def __init__(self, parent, Caption=_("Table Selection")):
-        super(PageTableSelection, self).__init__(parent=parent, Caption=Caption)
+        super().__init__(parent=parent, Caption=Caption)
 
     def createBody(self):
         self.tableSelections = {}
@@ -445,7 +445,7 @@ your application."""
 
 class PageOutput(AppWizardPage):
     def __init__(self, parent, Caption=_("Output Options")):
-        super(PageOutput, self).__init__(parent=parent, Caption=Caption)
+        super().__init__(parent=parent, Caption=Caption)
 
     def createBody(self):
         self.Form._convertTabs = False
@@ -553,7 +553,7 @@ You can always move the directory later."""
 
 class PageGo(AppWizardPage):
     def __init__(self, parent, Caption=_("Create Application")):
-        super(PageGo, self).__init__(parent=parent, Caption=Caption)
+        super().__init__(parent=parent, Caption=Caption)
         txt = _(
             """Press 'Finish' to create your application, or
 'Back' to edit any information."""
@@ -585,7 +585,7 @@ and type 'python %(appname)s.py' at the commandline.
 
 class AppWizard(Wizard):
     def __init__(self, parent=None, defaultDirectory=None, *args, **kwargs):
-        super(AppWizard, self).__init__(parent=parent, *args, **kwargs)
+        super().__init__(parent=parent, *args, **kwargs)
 
         self.Caption = _("Dabo Application Wizard")
         self.Picture = "daboIcon064"

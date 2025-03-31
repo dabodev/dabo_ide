@@ -36,7 +36,7 @@ from dabo.ui import dTextBox
 class EditPageSplitter(dSplitter):
     def __init__(self, *args, **kwargs):
         kwargs["createPanes"] = True
-        super(EditPageSplitter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.ShowPanelSplitMenu = False
 
     def initProperties(self):
@@ -283,7 +283,7 @@ class EditorPageFrame(dPageFrame):
 
 class EditorForm(dForm):
     def __init__(self, *args, **kwargs):
-        super(EditorForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def afterInit(self):
         # Set up the file drop target
@@ -292,7 +292,7 @@ class EditorForm(dForm):
         self.Sizer.append1x(pnl)
         pnl.Sizer = dSizer("v")
         self._lastPath = self.Application.getUserSetting("lastPath", os.getcwd())
-        super(EditorForm, self).afterInit()
+        super().afterInit()
         self.Caption = _("Dabo Editor")
         self.funcButton = dImage(
             pnl,

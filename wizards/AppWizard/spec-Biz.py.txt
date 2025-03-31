@@ -7,7 +7,7 @@ from .Base import Base
 class %(tableName)s(Base):
 
     def initProperties(self):
-        super(%(tableName)s, self).initProperties()
+        super()s, self).initProperties()
         self.Caption = "%(tableName)s"
         self.DataSource = "%(table)s"
         self.KeyField = %(pkField)s
@@ -37,11 +37,6 @@ class %(tableName)s(Base):
         # Western Europe is "latin-1", so if you are getting errors but are
         # unsure what encoding to pick, try uncommenting the following line:
         #self.Encoding = "latin-1"
-
-
-    def afterInit(self):
-        super(%(tableName)s, self).afterInit()
-
 
     def setBaseSQL(self):
         # Set up the base SQL (the fields clause, the from clause, etc.) The

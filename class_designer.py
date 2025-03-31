@@ -105,7 +105,7 @@ class PageInfoDialog(dOkCancelDialog):
         self.pageClass = _("<default>")
         self.tabPositions = ("Top", "Bottom", "Left", "Right")
         self.tabPosSelection = 0
-        super(PageInfoDialog, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def addControls(self):
         self.Caption = _("Paged Control Settings")
@@ -159,7 +159,7 @@ class ClassDesigner(dApp):
     isDesigner = True
 
     def __init__(self, clsFile=""):
-        super(ClassDesigner, self).__init__(
+        super().__init__(
             showSplashScreen=False, splashTimeout=10, ignoreScriptDir=True
         )
 
@@ -481,7 +481,8 @@ class ClassDesigner(dApp):
         else:
             base = dForm
 
-        class DesForm(ClassDesignerFormMixin, base):
+
+        class DesignerForm(ClassDesignerFormMixin, base):
             _superBase = base
             _superMixin = ClassDesignerFormMixin
             try:
@@ -505,7 +506,7 @@ class ClassDesigner(dApp):
                 self._formMode = True
                 if isDockForm:
                     self._configureForDockForm()
-                super(DesForm, self)._afterInit()
+                super()._afterInit()
 
             def addControls(self):
                 if not isinstance(self, dOkCancelDialog):
@@ -590,7 +591,7 @@ class ClassDesigner(dApp):
                     )
                     self.layout()
 
-        ret = DesForm
+        ret = DesignerForm
         if formIsMain and not isDialog and not isDockForm:
             self._desFormClass = ret
         return ret
@@ -1598,7 +1599,7 @@ class ClassDesigner(dApp):
                 self._fillFunc = fillFunc
                 self.alignControls = []
                 self.expandControl = None
-                super(SizerEditDlg, self).__init__(*args, **kwargs)
+                super().__init__(*args, **kwargs)
                 # Set the expand enable/disable
                 self.onExpandChange()
 
@@ -1868,7 +1869,7 @@ class ClassDesigner(dApp):
                 handled = True
         else:
             # Normal cut operation
-            super(ClassDesigner, self).onEditCut(evt)
+            super().onEditCut(evt)
 
     def onEditCopy(self, evt):
         handled = False
@@ -1879,7 +1880,7 @@ class ClassDesigner(dApp):
                 handled = True
         else:
             # Normal cut operation
-            super(ClassDesigner, self).onEditCopy(evt)
+            super().onEditCopy(evt)
 
     def onEditPaste(self, evt):
         handled = False
@@ -1905,7 +1906,7 @@ class ClassDesigner(dApp):
                     print("Cannot paste in ", pnl)
         else:
             # Normal cut operation
-            super(ClassDesigner, self).onEditPaste(evt)
+            super().onEditPaste(evt)
 
     def pasteObject(self, pnl, pos=None):
         """If there is a control's dict on the clipboard, re-create the control
@@ -2269,7 +2270,7 @@ class ClassDesigner(dApp):
             return
         else:
             # We're not running the demo, so quit the app
-            super(ClassDesigner, self).onFileExit(evt)
+            super().onFileExit(evt)
 
     def onGridCellSelected(self, evt):
         if self.openingClassXML:
@@ -4559,7 +4560,7 @@ if __name__ == '__main__':
         _getCurrentForm,
         _setCurrentForm,
         None,
-        _("Currently active designer surface  (DesForm)"),
+        _("Currently active designer surface  (DesignerForm)"),
     )
 
     EditorForm = property(

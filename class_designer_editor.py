@@ -100,7 +100,7 @@ class EditorControl(dEditor):
         if runtimeObjectName == "self.Parent":
             return obj.Parent
         else:
-            return super(EditorControl, self)._getRuntimeObject(runtimeObjectName)
+            return super()._getRuntimeObject(runtimeObjectName)
 
     def _makeContainingClassIntoSelf(self):
         """Override the default behavior. Get the 'self' class from the form."""

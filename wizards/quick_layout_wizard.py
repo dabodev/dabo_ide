@@ -801,7 +801,7 @@ to customize it as needed.""".strip()
 
 class QuickLayoutWizard(Wizard):
     def __init__(self, parent=None):
-        super(QuickLayoutWizard, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.Modal = True
         self.Caption = _("Add From Data Environment")
         self.Picture = "daboIcon096"
@@ -833,7 +833,7 @@ class QuickLayoutWizard(Wizard):
             # Error; do not proceed.
             return False
         self.append(pgs)
-        super(QuickLayoutWizard, self).start()
+        super().start()
 
     def makeConnection(self, showAlert=True):
         if self.ConnectionFile:

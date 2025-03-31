@@ -40,7 +40,7 @@ from menu_panel import MenuPanel
 class TreeSheet(dPanel):
     def _initProperties(self):
         self.tree = None
-        return super(TreeSheet, self)._initProperties()
+        return super()._initProperties()
 
     def _constructed(self):
         return hasattr(self, "tree") and isinstance(self.tree, dTreeView)

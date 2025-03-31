@@ -7,7 +7,7 @@ from .. import events
 class MenReports(dabo.ui.dMenu):
 
     def initProperties(self):
-        super(MenReports, self).initProperties()
+        super().initProperties()
         self.Caption = "Re&ports"
         self.HelpText = "Run a report to screen or printer"
         self.MenuID = "reports"

@@ -185,13 +185,11 @@ class SizerInfoFrame(dPageFrameNoTabs):
         self.gridPage = self.appendPage(self.gridClass)
 
     def layout(self):
-        super(SizerInfoFrame, self).layout()
+        super().layout()
         pg = self.SelectedPage
         try:
             if pg is not self.blankPage:
                 ui.callAfter(pg.fitToSizer)
-        #                 w, h = pg.Size
-        #                 self.Size = (w+40, h+40)
         except AttributeError:
             # blankPage hasn't been created yet
             pass
@@ -250,7 +248,7 @@ class AbstractSizerPanel(dPanel):
         return self.pgf.SelectedPage is not self.pgf.blankPage
 
     def layout(self, resetMin=True):
-        super(AbstractSizerPanel, self).layout(resetMin)
+        super().layout(resetMin)
         self.Size = self.pgf.Size
 
 
@@ -274,7 +272,7 @@ class SizerPaletteForm(dToolForm):
             kwargs["ShowMaxButton"] = False
             kwargs["ShowMinButton"] = False
             kwargs["TinyTitleBar"] = True
-        super(SizerPaletteForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def beforeInit(self):
         self.MenuBarClass = None
@@ -318,7 +316,7 @@ class SizerPaletteForm(dToolForm):
 
     def _delayedLayout(self):
         self.lockDisplay()
-        super(SizerPaletteForm, self).layout()
+        super().layout()
 
         self.inFitToSizer = True
         self.fitToSizer()

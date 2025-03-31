@@ -890,7 +890,7 @@ class ReportObjectTree(dTreeView):
 
 class ObjectTreeForm(DesignerControllerForm):
     def initProperties(self):
-        super(ObjectTreeForm, self).initProperties()
+        super().initProperties()
         self.Caption = "Report Object Tree"
         self.EditorClass = ReportObjectTree
 
@@ -904,7 +904,7 @@ class ReportPropSheet(ClassDesignerPropSheet.PropSheet):
         self.app = rdc
 
     def afterInit(self):
-        super(ReportPropSheet, self).afterInit()
+        super().afterInit()
         self.addObject(dLabel, Name="lblType", FontBold=True)
         self.Sizer.insert(0, self.lblType, "expand", halign="left", border=10)
         self.Sizer.insertSpacer(0, 10)
@@ -961,12 +961,12 @@ class ReportPropSheet(ClassDesignerPropSheet.PropSheet):
         if rgbTuple is None:
             rgbTuple = (0, 0, 0)
         rgbTuple = rdc.ActiveEditor._rw.getColorTupleFromReportLab(rgbTuple)
-        super(ReportPropSheet, self).editColor(objs, prop, val)
+        super().editColor(objs, prop, val)
 
 
 class PropSheetForm(DesignerControllerForm):
     def initProperties(self):
-        super(PropSheetForm, self).initProperties()
+        super().initProperties()
         self.Caption = "Report Properties"
         self.EditorClass = ReportPropSheet
         self.Controller = (
@@ -1730,7 +1730,7 @@ class ReportDesigner(dScrollPanel):
         import wx
 
         kwargs["style"] = wx.WANTS_CHARS
-        super(ReportDesigner, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def afterInit(self):
         self._bands = []
@@ -1922,7 +1922,7 @@ class ReportDesigner(dScrollPanel):
             rdc.refreshProps(refreshEditor=False)
 
     def refresh(self):
-        super(ReportDesigner, self).refresh()
+        super().refresh()
         self.showPosition()
         self.setCaption()
 
@@ -2507,12 +2507,12 @@ class ReportDesignerForm(dForm):
     def restoreSizeAndPosition(self):
         app = self.Application
         self.editor.Zoom = app.getUserSetting("ReportDesigner_zoom", 1.0)
-        super(ReportDesignerForm, self).restoreSizeAndPosition()
+        super().restoreSizeAndPosition()
 
     def saveSizeAndPosition(self):
         app = self.Application
         app.setUserSetting("ReportDesigner_zoom", self.editor.Zoom)
-        super(ReportDesignerForm, self).saveSizeAndPosition()
+        super().saveSizeAndPosition()
 
     def onActivate(self, evt):
         rdc.ActiveEditor = self.editor

@@ -77,7 +77,7 @@ class LayoutSaverMixin(dObject):
     """
 
     def __init__(self, *args, **kwargs):
-        super(LayoutSaverMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def getDesignerDict(
         self,
@@ -578,7 +578,7 @@ class LayoutPanel(dPanel, LayoutSaverMixin):
     def __init__(self, parent, properties=None, *args, **kwargs):
         self._autoSizer = self._extractKey(kwargs, "AutoSizer", True)
         kwargs["Size"] = (20, 20)
-        super(LayoutPanel, self).__init__(parent, properties, *args, **kwargs)
+        super().__init__(parent, properties, *args, **kwargs)
         # Let the framework know that this is just a placeholder object
         self._placeholder = True
         # Store the defaults for the various props
@@ -643,7 +643,7 @@ class LayoutPanel(dPanel, LayoutSaverMixin):
         propsToExclude=None,
     ):
         # Augment the default to add non-Property values
-        ret = super(LayoutPanel, self).getDesignerDict(
+        ret = super().getDesignerDict(
             itemNum, allProps=allProps, classID=classID, classDict=classDict
         )
         if self.ControllingSizer:
@@ -938,10 +938,10 @@ class LayoutSpacerPanel(LayoutPanel):
         self._spacing = 10
         self._orient = orient
         self._inGrid = inGrid
-        super(LayoutSpacerPanel, self).__init__(parent, properties=properties, *args, **kwargs)
+        super().__init__(parent, properties=properties, *args, **kwargs)
 
     def afterInit(self):
-        super(LayoutSpacerPanel, self).afterInit()
+        super().afterInit()
         self.AlwaysResetSizer = False
         self.Size = self.SpacingSize
         # Change these to make them different than LayoutPanels
@@ -1059,10 +1059,10 @@ class LayoutSizerMixin(LayoutSaverMixin):
     def __init__(self, *args, **kwargs):
         self.isDesignerSizer = True
         self._selected = False
-        super(LayoutSizerMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _afterInit(self):
-        super(LayoutSizerMixin, self)._afterInit()
+        super()._afterInit()
         # No special reason for these choices, except that they make the
         # sizer clearly visible.
         self.outlineColor = "ORCHID"
@@ -1662,7 +1662,7 @@ class LayoutSizerMixin(LayoutSaverMixin):
 
 class LayoutSizer(LayoutSizerMixin, dSizer):
     def __init__(self, *args, **kwargs):
-        super(LayoutSizer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def getBorderedClass(self):
         """Return the class that is the border sizer version of this class."""
@@ -1677,7 +1677,7 @@ class LayoutBorderSizer(LayoutSizerMixin, dBorderSizer):
             box = boxClass(box)
         if caption is not None:
             box.Caption = caption
-        super(LayoutBorderSizer, self).__init__(box, *args, **kwargs)
+        super().__init__(box, *args, **kwargs)
 
     def getNonBorderedClass(self):
         """Return the class that is the non-border sizer version of this class."""
@@ -1691,7 +1691,7 @@ class LayoutBorderSizer(LayoutSizerMixin, dBorderSizer):
         to display and edit the property, and 'readonly', which will prevent editing when True.
         (dict)
         """
-        ret = super(LayoutBorderSizer, self)._getDesProps()
+        ret = super()._getDesProps()
         ret.update(
             {
                 "Caption": {"type": str, "readonly": False},
@@ -1716,7 +1716,7 @@ class LayoutBorderSizer(LayoutSizerMixin, dBorderSizer):
 
 class LayoutGridSizer(LayoutSizerMixin, dGridSizer):
     def __init__(self, *args, **kwargs):
-        super(LayoutGridSizer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._rows = self._cols = 0
 
     def setItemProps(self, itm, props):

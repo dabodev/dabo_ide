@@ -219,7 +219,7 @@ def mkDesignerMenu(parent, target=None):
 
         emCnt = len(em.Children)
         em.insertMenu(emCnt - 1, alignMenu)
-        #         alignMenu.DynamicEnabled = app.shouldEnableAlignMenu
+        alignMenu.DynamicEnabled = app.shouldEnableAlignMenu
 
         try:
             isMain = parent._isMain

@@ -31,7 +31,7 @@ class MenuDesignerForm(dForm):
         appDir = self.Application.HomeDirectory
         kwargs["MenuBarFile"] = os.path.join(appDir, "MenuDesignerMenu.mnxml")
         self.Controller = self
-        super(MenuDesignerForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.Caption = "Dabo Menu Designer"
         self.mainPanel = dPanel(self)
         self.Sizer.append1x(self.mainPanel)

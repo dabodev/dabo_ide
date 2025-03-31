@@ -22,7 +22,7 @@ class DragHandle(dPanel):
 
     def __init__(self, parent, handleName):
         sz = (HANDLE_SIZE, HANDLE_SIZE)
-        super(DragHandle, self).__init__(parent, Size=sz, Visible=False, BackColor="blue")
+        super().__init__(parent, Size=sz, Visible=False, BackColor="blue")
         self.handleName = handleName
 
         if self.handleName in ("TL", "BR"):

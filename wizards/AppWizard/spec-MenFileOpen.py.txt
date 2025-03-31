@@ -7,7 +7,7 @@ from .. import events
 class MenFileOpen(dabo.ui.dMenu):
 
     def initProperties(self):
-        super(MenFileOpen, self).initProperties()
+        super().initProperties()
         self.Caption = "&Open"
         self.HelpText = "Open a module"
 

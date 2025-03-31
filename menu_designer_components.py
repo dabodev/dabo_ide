@@ -85,7 +85,7 @@ class CaptionPanel(MenuSaverMixin, dPanel):
         self._hotKeyChar = ""
         self._hotKeyControl = False
         self._hotKeyShift = False
-        super(CaptionPanel, self).__init__(parent, *args, **kwargs)
+        super().__init__(parent, *args, **kwargs)
         self.BorderWidth = 1
         self.BorderColor = (222, 222, 222)
         self.Height = 24
@@ -197,7 +197,7 @@ class CaptionPanel(MenuSaverMixin, dPanel):
         that require a refresh occur quickly, the 'slow stuff' only gets
         called once.
         """
-        super(CaptionPanel, self).refresh()
+        super().refresh()
         self.setWidth()
         self.Parent.update()
         self.Parent.layout()
@@ -503,11 +503,11 @@ class CaptionBitmapPanel(CaptionPanel):
         self._bitmap = None
         self._bmp = None
         self._picture = None
-        super(CaptionBitmapPanel, self).__init__(parent, *args, **kwargs)
+        super().__init__(parent, *args, **kwargs)
 
     def getAdditionalWidth(self):
         """Add in the width of the bitmap."""
-        ret = super(CaptionBitmapPanel, self).getAdditionalWidth()
+        ret = super().getAdditionalWidth()
         if self._bmp is not None:
             ret += self._bmp.Width + 5
         return ret
@@ -536,7 +536,7 @@ class CaptionBitmapPanel(CaptionPanel):
         self.refresh()
 
     def _getDesignerProps(self):
-        ret = super(CaptionBitmapPanel, self)._getDesignerProps()
+        ret = super()._getDesignerProps()
         ret.update(
             {
                 "Picture": {

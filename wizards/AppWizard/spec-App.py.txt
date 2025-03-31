@@ -38,4 +38,4 @@ class App(dApp):
         else:
             # no need for main form in SDI mode:
             self.MainFormClass = None
-        super(App, self).setup()
+        super().setup()

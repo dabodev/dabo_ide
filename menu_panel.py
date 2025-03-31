@@ -29,7 +29,7 @@ class MenuItemContainer(dPanel):
 
     def __init__(self, *args, **kwargs):
         kwargs["AlwaysResetSizer"] = True
-        super(MenuItemContainer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.Sizer = dSizerV(DefaultBorder=8, DefaultBorderLeft=True, DefaultBorderRight=True)
 
 
@@ -66,7 +66,7 @@ class AbstractMenuPanel(MenuSaverMixin, dPanel):
         # Collection of contained sub-items
         self.childItems = []
         kwargs["BackColor"] = BASE_BACKCOLOR
-        super(AbstractMenuPanel, self).__init__(parent, *args, **kwargs)
+        super().__init__(parent, *args, **kwargs)
         self._baseClass = self.__class__
         self.Sizer = dSizerV()
         self.FontSize += FONT_SIZE_DIFF
@@ -161,11 +161,11 @@ class AbstractMenuPanel(MenuSaverMixin, dPanel):
             self._properties["Action"] = val
 
     def _getCaption(self):
-        return super(AbstractMenuPanel, self)._getCaption()
+        return super()._getCaption()
 
     def _setCaption(self, val):
         if self._constructed():
-            super(AbstractMenuPanel, self)._setCaption(val)
+            super()._setCaption(val)
 
             def _deferCaption():
                 try:
@@ -444,7 +444,7 @@ class MenuBarPanel(AbstractMenuPanel):
     """Used for the top-level menu bar."""
 
     def __init__(self, parent, *args, **kwargs):
-        super(MenuBarPanel, self).__init__(parent, *args, **kwargs)
+        super().__init__(parent, *args, **kwargs)
         self._isMenuBarLink = True
 
     def _initCaptions(self):
@@ -585,7 +585,7 @@ class MenuPanel(AbstractMenuPanel):
     """Used for the menus in the menu bar."""
 
     def afterInit(self):
-        super(MenuPanel, self).afterInit()
+        super().afterInit()
         self.itemDict = {}
         self._menuitem_container = None
         self.childItems = []
@@ -811,7 +811,7 @@ class MenuItemPanel(AbstractMenuPanel):
     """Used for the menu items in menus."""
 
     def __init__(self, *args, **kwargs):
-        super(MenuItemPanel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._isMenuItem = True
 
     def _initCaptions(self):
@@ -885,7 +885,7 @@ class SeparatorPanel(MenuItemPanel):
     """Used for the menu items in menus."""
 
     def __init__(self, *args, **kwargs):
-        super(SeparatorPanel, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.Caption = "-separator-"
         self._isSeparator = True
         self._isMenuItem = False
