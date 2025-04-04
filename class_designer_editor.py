@@ -187,6 +187,10 @@ class EditorControl(dEditor):
 
 
 class EditorForm(dForm):
+    def initProperties(self):
+        self.NameBase = "EditorForm"
+        super().initProperties()
+
     def afterInit(self):
         self._defaultLeft = 30
         self._defaultTop = 620

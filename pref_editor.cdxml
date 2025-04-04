@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<dForm Name="dForm" Caption="Dabo Preference Editor" SaveRestorePosition="False" Height="660" Width="720" designerClass="DesignerForm">
+<dForm Name="dForm" Caption="Dabo Preference Editor" SaveRestorePosition="True" Height="660" Width="720" designerClass="DesignerForm">
     <code>
         <expandAll><![CDATA[
 def expandAll(self):

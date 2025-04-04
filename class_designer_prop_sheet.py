@@ -317,6 +317,9 @@ class PropSheet(dPanel):
     def getObjPropVal(self, obj, prop):
         """Subclasses (ie the report designer) can override."""
         ret = None
+        if not obj:
+            # Object is being destroyed
+            return
         if hasattr(obj, prop):
             ret = eval("obj.%s" % prop)
         else:

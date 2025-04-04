@@ -17,6 +17,7 @@ from dabo.lib import DesignerUtils
 from dabo.lib import utils as libutils
 from dabo.lib.DesignerClassConverter import DesignerClassConverter
 from dabo.lib.utils import dictStringify
+from dabo.lib.utils import random_string
 from dabo.lib.utils import ustr
 from dabo.localization import _
 from dabo.ui import dBaseMenuBar
@@ -159,9 +160,7 @@ class ClassDesigner(dApp):
     isDesigner = True
 
     def __init__(self, clsFile=""):
-        super().__init__(
-            showSplashScreen=False, splashTimeout=10, ignoreScriptDir=True
-        )
+        super().__init__(showSplashScreen=False, splashTimeout=10, ignoreScriptDir=True)
 
         self._basePrefKey = "ide.ClassDesigner"
         self._desFormClass = None
@@ -305,6 +304,7 @@ class ClassDesigner(dApp):
 
         clsOK = False
         if clsFile:
+            clsFile = clsFile[0] if isinstance(clsFile, list) else clsFile
             if not clsFile.endswith(".cdxml"):
                 clsFile += ".cdxml"
             try:
@@ -815,7 +815,7 @@ class ClassDesigner(dApp):
             frmClass = self.getFormClass(filepath=pth)
             if isWiz:
                 self._extractKey(atts, "PageCount")
-            frm = frmClass(None, Name=nm, SaveRestorePosition=False, attProperties=atts)
+            frm = frmClass(None, Name=nm, SaveRestorePosition=True, attProperties=atts)
             # The overall size is stored in the out child object's atts
             sz = self._extractKey(clsd["attributes"], "FormSize")
             if sz:
@@ -1823,7 +1823,7 @@ class ClassDesigner(dApp):
                 self.CurrentForm = cf
                 ui.callAfterInterval(100, self.updateLayout)
             else:
-                frm = dForm(None, Visible=False, NameBase="DEFA")
+                frm = dForm(None, Visible=False, NameBase=srcObj.Name)
                 # We need to handle all the dependent class types
                 if issubclass(cls, dPage) and isinstance(srcObj.Parent, self.pagedControls):
                     pgf = srcObj.Parent
@@ -2196,7 +2196,7 @@ class ClassDesigner(dApp):
             frm = self.MainForm
         else:
             frmClass = self.getFormClass()
-            frm = frmClass(parent=None, SaveRestorePosition=False, UseSizers=useSizers)
+            frm = frmClass(parent=None, SaveRestorePosition=True, UseSizers=useSizers)
             frm._setupPanels(addBasePanel=addBasePanel)
         frm.UseSizers = useSizers
         frm.Controller = self
@@ -4227,7 +4227,7 @@ class ClassDesigner(dApp):
         return """import os
 import inspect
 
-from .application import dApp
+from dabo.application import dApp
 
 def main():
     app = dApp()
