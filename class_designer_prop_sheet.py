@@ -146,12 +146,10 @@ class PropSheet(dPanel):
             propDict = None
             if isSlot or isSpacer:
                 szItem = ob.ControllingSizerItem
-                sz = ob.ControllingSizer
-                propDict = sz.ItemDesignerProps
+                if ob.ControllingSizer:
+                    propDict = ob.ControllingSizer.ItemDesignerProps
                 if isSpacer:
                     propDict.update(ob.DesignerProps)
-            elif isSizer:
-                sz = ob
             if propDict is None:
                 propDict = ob.DesignerProps
             obRest = obj[1:]

@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 
-from .. import ui
-from ..application import dApp
+from dabo import ui
+from dabo.application import dApp
 from .GrdBase import GrdBase
 
 
 class Grd%(tableName)s(GrdBase):
 
     def afterInitAll(self):
-        super()s, self).afterInitAll()
+        super().afterInitAll()
         biz = self.Form.getBizobj("%(datasource)s")
 
         if not biz:

@@ -33,7 +33,7 @@ def deletePref(self, key):
         <afterInit><![CDATA[
 def afterInit(self):
     self.pth = ""
-    self.BasePrefKey = "dabo.ide.PrefEditor"
+    self.BasePrefKey = "ide.PrefEditor"
 ]]>
         </afterInit>
         <afterInitAll><![CDATA[
@@ -43,7 +43,7 @@ def afterInitAll(self):
     if sys.argv[1:]:
         db = sys.argv[1]
     if db:
-        con = dabo.db.dConnection(dbType="sqlite", database=db)
+        con = db.dConnection(dbType="sqlite", database=db)
         cur = con.getDaboCursor()
         self.pref = dPref(crs=cur, cxn=con)
     else:
@@ -70,7 +70,7 @@ def addPref(self, base, key, typ):
         # Just set the node
         eval("self.pref.%s" % newkey)
     else:
-        typDict = {"String": str, "Unicode": unicode, "Integer": int, "Float": float, 
+        typDict = {"String": str, "Integer": int, "Float": float, 
                 "Boolean": bool, "List": list, "Tuple": tuple, "Dict": dict, 
                 "Datetime": datetime.datetime, "Date": datetime.date}
         self.pref.addKey(newkey, typDict[typ], typDict[typ]())
@@ -114,12 +114,12 @@ def collapseAll(self):
         </collapseAll>
         <updatePref><![CDATA[
 def updatePref(self):
-    print "UP", self, self.tree
+    print("UP", self, self.tree)
     if not self or not self.tree:
         return
     nd = self.tree.Selection
     self.pth = self.tree.getKeyPathForNode(nd)
-    print "PTH", self.pth
+    print("PTH", self.pth)
     val = self.pref.getValue(self.pth)
     self.txtPrefName.Value = nd.Caption
     if val is not None:
@@ -133,8 +133,10 @@ def updatePref(self):
         </updatePref>
         <importStatements><![CDATA[
 import datetime
-from dabo.dPref import dPref
-from ..localization import _
+from dabo import db
+from dabo import ui
+from dabo.preference_mgr import dPref
+from dabo.localization import _
 ]]>
         </importStatements>
     </code>
@@ -167,12 +169,12 @@ def getKeyPathForNode(self, node):
 def onAddChild(self, evt):
     nd = self.Selection
     basekey = self.getKeyPathForNode(nd)
-    ctls = ((_("Preference Name?"), unicode, "prefname"), 
-            (_("Type:"), ["String", "Unicode", "Integer", 
+    ctls = ((_("Preference Name?"), str, "prefname"), 
+            (_("Type:"), ["String", "Integer", 
             "Float", "Boolean", "List", "Tuple", "Dict", "Datetime", "Date"], "typ") )
-    dlg = dabo.ui.dOkCancelDialog(self, Caption=_("Add Child Key"))
+    dlg = ui.dOkCancelDialog(self, Caption=_("Add Child Key"))
     dlg.addControlSequence(ctls)
-    dlg.typ.Value = "Unicode"
+    dlg.typ.Value = "String"
     dlg.show()
     if dlg.Accepted:
         prf = dlg.prefname.Value
@@ -192,13 +194,13 @@ def onDeleteNode(self, evt):
                                                     </onDeleteNode>
                                                     <onTreeSelection><![CDATA[
 def onTreeSelection(self, evt):
-    dabo.ui.callAfter(self.Form.updatePref)
+    ui.callAfter(self.Form.updatePref)
 ]]>
                                                     </onTreeSelection>
                                                     <onContextMenu><![CDATA[
 def onContextMenu(self, evt):
     node = self.Selection
-    pop = dabo.ui.dMenu()
+    pop = ui.dMenu()
     pop.append(_("Delete"), OnHit=self.onDeleteNode)
     currVal = self.Form.getNodeValue(node)
     if currVal is None:
@@ -219,16 +221,16 @@ def onContextMenu(self, evt):
                                                     <code>
                                                         <onKeyUp><![CDATA[
 def onKeyUp(self, evt):
-    dabo.ui.callAfterInterval(250, self.Form.savePref)
+    ui.callAfterInterval(250, self.Form.savePref)
 ]]>
                                                         </onKeyUp>
                                                     </code>
                                                 </dTextBox>
-                                                <dDropdownList sizerInfo="{'RowSpan': 1, 'ColSpan': 1, 'HAlign': 'Left', 'ColExpand': True}" rowColPos="(2, 1)" Choices="[u&apos;-None-&apos;, u&apos;String&apos;, u&apos;Unicode&apos;, u&apos;Integer&apos;, u&apos;Float&apos;, u&apos;Boolean&apos;, u&apos;List&apos;, u&apos;Tuple&apos;, u&apos;Dict&apos;, u&apos;Datetime&apos;, u&apos;Date&apos;]" Width="105" designerClass="controlMix" RegID="ddType">
+                                                <dDropdownList sizerInfo="{'RowSpan': 1, 'ColSpan': 1, 'HAlign': 'Left', 'ColExpand': True}" rowColPos="(2, 1)" Choices="[u&apos;-None-&apos;, u&apos;String&apos;, u&apos;Integer&apos;, u&apos;Float&apos;, u&apos;Boolean&apos;, u&apos;List&apos;, u&apos;Tuple&apos;, u&apos;Dict&apos;, u&apos;Datetime&apos;, u&apos;Date&apos;]" Width="105" designerClass="controlMix" RegID="ddType">
                                                     <code>
                                                         <afterInit><![CDATA[
 def afterInit(self):
-    self.Keys = [type(None), str, unicode, int, float, bool, list, tuple, dict, datetime.datetime, datetime.date]
+    self.Keys = [type(None), str, int, float, bool, list, tuple, dict, datetime.datetime, datetime.date]
     self.ValueMode = "Key"
 ]]>
                                                         </afterInit>
@@ -278,7 +280,7 @@ def onPageEnter(self, evt):
                                         <code>
                                             <onKeyChar><![CDATA[
 def onKeyChar(self, evt):
-    dabo.ui.callAfter(self.Form.filterPrefs)
+    ui.callAfter(self.Form.filterPrefs)
 ]]>
                                             </onKeyChar>
                                         </code>
@@ -304,7 +306,7 @@ def rowChanged(self):
                                         <onGridCellSelected><![CDATA[
 def onGridCellSelected(self, evt):
     if evt.row != self.CurrentRow:
-        dabo.ui.callAfter(self.rowChanged)
+        ui.callAfter(self.rowChanged)
 ]]>
                                         </onGridCellSelected>
                                     </code>

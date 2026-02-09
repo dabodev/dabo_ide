@@ -1691,7 +1691,13 @@ class LayoutBorderSizer(LayoutSizerMixin, dBorderSizer):
         to display and edit the property, and 'readonly', which will prevent editing when True.
         (dict)
         """
-        ret = super()._getDesProps()
+        try:
+            ret = super()._getDesProps()
+            print("WORKED _getDesProps()")
+        except AttributeError:
+            print("FAILED _getDesProps()")
+            ret = {}
+
         ret.update(
             {
                 "Caption": {"type": str, "readonly": False},

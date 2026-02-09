@@ -854,8 +854,9 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
         f.close()
 
     def onRunLayoutWiz(self, evt):
-        """Run the QuickLayoutWizard, using the form's named
-        connection. If none exists, ask the user to select one.
+        """
+        Run the QuickLayoutWizard, using the form's named connection.
+        If none exists, ask the user to select one.
         """
         if self.UseSizers:
             pnl = self.Controller.getActivePanel()
@@ -903,7 +904,7 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
         loadCodeTemplate = self.getBizobjLoadTemplate()
         addFlds = []
         for fld in flds:
-            addFlds.append('\t\tself.addField("%s")' % fld)
+            addFlds.append('        self.addField("%s")' % fld)
         fldDefs = "\n".join(addFlds)
         tq = '"' * 3
         bizcode = bizCodeTemplate % locals()
@@ -1437,11 +1438,9 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
 
     def getBizobjTemplate(self):
         return """#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from dabo.biz.bizobj import dBizobj
 
-from .. import biz
-
-class %(tblTitle)sBizobj(biz.dBizobj):
+class %(tblTitle)sBizobj(dBizobj):
     def afterInit(self):
         self.DataSource = "%(tbl)s"
         self.KeyField = "%(pk)s"

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from .. import ui
-from .. import events
+from dabo import ui
+from dabo import events
 
 
-class MenFileOpen(dabo.ui.dMenu):
+class MenFileOpen(ui.dMenu):
 
     def initProperties(self):
         super().initProperties()
@@ -32,7 +32,7 @@ class MenFileOpen(dabo.ui.dMenu):
                 if autoHotKeys and "&" not in caption:
                     caption = "&%%s" %% caption
                 plainCaption = caption.replace("&", "")
-                itm = dabo.ui.dMenuItem(self, Caption=caption,
+                itm = ui.dMenuItem(self, Caption=caption,
                         HelpText="Open the %%s module" %% plainCaption,
                         Tag=form[1])
                 itm.bindEvent(events.Hit, self.openForm)

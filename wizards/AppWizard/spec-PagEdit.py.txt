@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
-from .. import ui
-from ..application import dApp
+from dabo import ui
+from dabo.application import dApp
 from .PagEditBase import PagEditBase
 
 
@@ -24,7 +24,7 @@ class PagEdit%(tableName)s(PagEditBase):
             biz = Biz()
 
 %(createItems)s
-        super()s, self).createItems()
+        super().createItems()
 
 
 if __name__ == "__main__":

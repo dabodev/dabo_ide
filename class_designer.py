@@ -81,7 +81,6 @@ from class_designer_components import LayoutBasePanel
 from class_designer_components import LayoutBorderSizer
 from class_designer_components import LayoutGridSizer
 from class_designer_components import LayoutPanel
-from class_designer_components import LayoutSaverMixin
 from class_designer_components import LayoutSizer
 from class_designer_components import LayoutSpacerPanel
 from class_designer_components import NoSizerBasePanel
@@ -2161,30 +2160,28 @@ class ClassDesigner(dApp):
             def onSzChk(self, evt):
                 self.baseChk.Visible = self.szChk.Value
 
-        dlg = NewClassPicker(
+        with NewClassPicker(
             self.CurrentForm,
             Caption=_("Open / Create Class"),
             BasePrefKey=self.BasePrefKey + ".NewClassPicker",
-        )
-        dlg.show()
-        if not dlg.Accepted:
-            dlg.release()
-            return
-        if dlg.fileToOpen:
-            return self.openClass(dlg.fileToOpen)
-        newClass = self._selectedClass = dlg.dd.Value
-        if newClass is dDockForm:
-            ui.exclaim(
-                _("Sorry, the Dock Form class does not currently work in the Class Designer."),
-                title=_("Class not implemented"),
-            )
-            return
-        isDialog = issubclass(newClass, dDialog)
-        isWizard = issubclass(newClass, Wizard)
-        isFormClass = issubclass(newClass, (dForm, dFormMain, dDialog, Wizard))
-        useSizers = dlg.szChk.Visible and dlg.szChk.Value
-        addBasePanel = dlg.baseChk.Visible and dlg.baseChk.Value
-        dlg.release()
+        ) as dlg:
+            dlg.show()
+            if not dlg.Accepted:
+                return
+            if dlg.fileToOpen:
+                return self.openClass(dlg.fileToOpen)
+            newClass = self._selectedClass = dlg.dd.Value
+            if newClass is dDockForm:
+                ui.exclaim(
+                    _("Sorry, the Dock Form class does not currently work in the Class Designer."),
+                    title=_("Class not implemented"),
+                )
+                return
+            isDialog = issubclass(newClass, dDialog)
+            isWizard = issubclass(newClass, Wizard)
+            isFormClass = issubclass(newClass, (dForm, dFormMain, dDialog, Wizard))
+            useSizers = dlg.szChk.Visible and dlg.szChk.Value
+            addBasePanel = dlg.baseChk.Visible and dlg.baseChk.Value
 
         if (
             useSizers
@@ -2522,8 +2519,8 @@ class ClassDesigner(dApp):
             if not setCodeText:
                 # Create the skeleton of the method
                 setCode = [
-                    "def %s(self, val):" % setMethod,
-                    "\tself._%s = val" % propertyAtt,
+                    f"def {setMethod}(self, val):",
+                    f"    self._{propertyAtt} = val",
                 ]
                 setCodeText = os.linesep.join(setCode)
             cd[setMethod] = setCodeText
@@ -2539,7 +2536,7 @@ class ClassDesigner(dApp):
             delCodeText = cd.get(delMethod, "")
             if not delCodeText:
                 # Create the skeleton of the method
-                delCode = ["def %s(self):" % delMethod, "\treturn"]
+                delCode = ["def %s(self):" % delMethod, "    return"]
                 delCodeText = os.linesep.join(delCode)
             cd[delMethod] = delCodeText
         # Update the main dict
@@ -3877,7 +3874,8 @@ class ClassDesigner(dApp):
                 hsz.append(txt, 1, halign="left")
                 self.Sizer.append(hsz, halign="center")
 
-                chk = dCheckBox(self, RegID="chkBox", Caption=_("Add Sizer Box?"))
+                chk = dCheckBox(self, RegID="chkBox", Caption=_("Add Sizer Box?"),
+                                OnHit=self.onHit_chkBox)
                 self.Sizer.append(chk, halign="center")
 
                 self.boxCaptionSizer = hsz = dSizer("h")
@@ -4100,6 +4098,7 @@ class ClassDesigner(dApp):
         outBorder = layoutInfo["border"]
         lblAlign = layoutInfo["labelAlignment"]
         useColons = layoutInfo["useColons"]
+        useTitleCase = layoutInfo["useTitleCase"]
         # Update the outBorder value before adding the controls.
         pnl.Sizer_Border = outBorder
 
@@ -4164,7 +4163,8 @@ class ClassDesigner(dApp):
                 lbls.append(lbl)
                 # Need to add this after the fact, so that when the form is saved,
                 # the caption is different than the original value.
-                lbl.Caption = "%s%s" % (fldData["caption"].rstrip(":"), colonSep)
+                cap = f"{fldData["caption"].rstrip(":")}{colonSep}"
+                lbl.Caption = cap.title() if useTitleCase else cap
                 ctlClass = self.getControlClass(fldData["class"])
                 ctl = ctlClass(pnl, DataSource=table, DataField=fld)
                 if isinstance(ctl, dTextBox):

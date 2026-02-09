@@ -7,31 +7,61 @@ remotehost = ""
 import sys
 import os
 
-from .. import ui
-
 # The loading of the UI needs to happen before the importing of the
 # db, biz, and ui packages:
+from dabo import settings
 if sys.platform[:3] == "win":
-    dabo.MDI = True
+    settings.MDI = True
 
-import db
-import biz
-import ui
+from dabo import biz
+from dabo import db
+from dabo import lib
+from dabo import ui
 
 from App import App
 app = App(SourceURL=remotehost)
 
-app.db = db
-app.biz = biz
-app.ui = ui
 
 # Make it easy to find any images or other files you put in the resources
 # directory.
 sys.path.append(os.path.join(app.HomeDirectory, "resources"))
 
+
+def merge_modules(primary, additive):
+    """
+    Merge the contents of one module into another
+
+    The apps created by AppWizard have their own db, biz, and ui directories, and these names
+    collide with the native dabo modules. To handle this, this function will add the __dict__ of the
+    module passed in as `additive` to the `primary` module's  __dict__. This is very much like
+    inheritance where a subclass will override any names in common with its superclass.
+    """
+    primary.__dict__.update(additive.__dict__)
+
+
+def import_and_merge_local_modules():
+    import biz as local_biz
+    import db as local_db
+    import lib as local_lib
+    import ui as local_ui
+
+    merge_modules(biz, local_biz)
+    merge_modules(db, local_db)
+    merge_modules(lib, local_lib)
+    merge_modules(ui, local_ui)
+
+
 # Set the BasePrefKey for the app
 app.BasePrefKey = "%(appName)s"
 app.setup()
+
+# Add the local modules to the dabo namespace
+import_and_merge_local_modules()
+
+# Add a shortcut reference n the app to the main modules
+app.db = db
+app.biz = biz
+app.ui = ui
 
 # Set up a global connection to the database that all bizobjs will share:
 app.dbConnection = app.getConnectionByName("%(dbConnectionDef)s")

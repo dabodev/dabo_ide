@@ -3,12 +3,12 @@
 import inspect
 import os
 
-from .. import ui
-from ..application import dApp
+from dabo import ui
+from dabo.application import dApp
 
 
 def main():
-    app = dApp(BasePrefKey="PrefEditor", MainFormClass="PrefEditor.cdxml")
+    app = dApp(BasePrefKey="PrefEditor", MainFormClass="pref_editor.cdxml")
     curdir = os.getcwd()
     # Get the current location's path
     fname = os.path.abspath(inspect.getfile(main))

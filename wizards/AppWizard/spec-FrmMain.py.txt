@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from .. import ui
+from dabo import ui
 from .MenFileOpen import MenFileOpen
 
 
-class FrmMain(dabo.ui.dFormMain):
+class FrmMain(ui.dFormMain):
 
     def afterInit(self):
         super().afterInit()

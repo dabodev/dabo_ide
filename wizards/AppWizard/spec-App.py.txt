@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 
-from ..application import dApp
-from ..localization import _
-from version import __version__
+from dabo.application import dApp
+from dabo.localization import _
+from dabo import settings
+from dabo.version import get_version
 
 
 class App(dApp):
@@ -30,10 +31,10 @@ class App(dApp):
         self.setAppInfo("authorURL", "Your URL")
 
         ## Set app version information:
-        self.setAppInfo("appVersion", __version__)
+        self.setAppInfo("appVersion", get_version())
 
     def setup(self):
-        if dabo.MDI:
+        if settings.MDI:
             self.MainFormClass = self.ui.FrmMain
         else:
             # no need for main form in SDI mode:

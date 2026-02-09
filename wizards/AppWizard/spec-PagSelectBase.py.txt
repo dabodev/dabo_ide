@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 
-from ... import ui
-from ...dObject import dObject
-from ... import events
-from ...lib import datanav as datanav
+from dabo import ui
+from dabo.base_object import dObject
+from dabo import events
+from dabo.lib import datanav as datanav
 
 IGNORE_STRING = datanav.QRY_OPERATOR.IGNORE
 
@@ -15,17 +15,17 @@ class SelectControlMixin(dObject):
         super().initProperties()
         self.SaveRestoreValue = True
 
-class SelectTextBox(SelectControlMixin, dabo.ui.dTextBox): pass
-class SelectCheckBox(SelectControlMixin, dabo.ui.dCheckBox): pass
-class SelectLabel(SelectControlMixin, dabo.ui.dLabel):
+class SelectTextBox(SelectControlMixin, ui.dTextBox): pass
+class SelectCheckBox(SelectControlMixin, ui.dCheckBox): pass
+class SelectLabel(SelectControlMixin, ui.dLabel):
     def afterInit(self):
         # Basically, we don't want anything to display, but it's
         # easier if every selector has a matching control.
         self.Caption = ""
-class SelectDateTextBox(SelectControlMixin, dabo.ui.dDateTextBox): pass
-class SelectSpinner(SelectControlMixin, dabo.ui.dSpinner): pass
+class SelectDateTextBox(SelectControlMixin, ui.dDateTextBox): pass
+class SelectSpinner(SelectControlMixin, ui.dSpinner): pass
 
-class SelectionOpDropdown(dabo.ui.dDropdownList):
+class SelectionOpDropdown(ui.dDropdownList):
     def initProperties(self):
         super().initProperties()
         self.SaveRestoreValue = True
@@ -61,7 +61,7 @@ class SelectionOpDropdown(dabo.ui.dDropdownList):
     Target = property(_getTarget, _setTarget, None, "Holds a reference to the edit control.")
 
 
-class SortLabel(dabo.ui.dLabel):
+class SortLabel(ui.dLabel):
     def initEvents(self):
         super().initEvents()
         self.bindEvent(events.MouseRightClick, self.Parent.Parent.onSortLabelRClick)

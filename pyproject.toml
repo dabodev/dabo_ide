@@ -80,10 +80,11 @@ dependencies = [
     "wxpython>=4.2.2",
 ]
 
-[tool.uv]
-dev-dependencies = [
-    "ipython>=8.31.0",
-    "pytest-pudb>=0.7.0",
+[dependency-groups]
+dev = [
+    "ipython>=9.10.0",
+    "pudb>=2025.1.5",
+    "ruff>=0.15.0",
 ]
 
 [tool.uv.sources]

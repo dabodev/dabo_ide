@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
 
-import six
 from dabo import application
 from dabo import events
 from dabo import settings
@@ -432,7 +431,7 @@ class EditorForm(dForm):
             if nonEvent is None:
                 nonEvent = mthd not in self.Controller.getClassEvents(obj._baseClass)
             txt = self._getMethodBase(mthd, not (nonEvent is True))
-        if isinstance(txt, six.binary_type):
+        if isinstance(txt, bytes):
             txt = txt.decode(ed.Encoding)
         txt = txt.strip()
         if ed.Value != txt:

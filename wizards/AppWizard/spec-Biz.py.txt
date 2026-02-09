@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from ..localization import _
+from dabo.localization import _
 from .Base import Base
 
 
 class %(tableName)s(Base):
 
     def initProperties(self):
-        super()s, self).initProperties()
+        super().initProperties()
         self.Caption = "%(tableName)s"
         self.DataSource = "%(table)s"
         self.KeyField = %(pkField)s

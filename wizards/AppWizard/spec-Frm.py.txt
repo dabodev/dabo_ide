@@ -2,8 +2,7 @@
 
 import os
 
-from .. import ui
-from ..application import dApp
+from dabo.application import dApp
 from .FrmBase import FrmBase
 from .Grd%(tableName)s import Grd%(tableName)s
 from .PagSelect%(tableName)s import PagSelect%(tableName)s
@@ -13,7 +12,7 @@ from .PagEdit%(tableName)s import PagEdit%(tableName)s
 class Frm%(tableName)s(FrmBase):
 
     def initProperties(self):
-        super()s, self).initProperties()
+        super().initProperties()
         self.NameBase = "frm%(tableName)s"
         self.Caption = "%(tableName)s"
         self.SelectPageClass = PagSelect%(tableName)s
@@ -28,7 +27,7 @@ class Frm%(tableName)s(FrmBase):
             app = self.Application
             biz%(tableName)s = app.biz.%(tableName)s(app.dbConnection)
             self.addBizobj(biz%(tableName)s)
-        super()s, self).afterInit()
+        super().afterInit()
 
 
 if __name__ == "__main__":

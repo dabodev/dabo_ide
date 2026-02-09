@@ -207,6 +207,8 @@ class PemForm(dForm):
             isSizer = isinstance(ob, dSizerMixin)
             isColumn = isinstance(ob, dColumn)
             isNode = isinstance(ob, dTreeView.getBaseNodeClass())
+            sz = None
+            lbl = ""
             if isSlot or isSpacer:
                 szItem = ob.ControllingSizerItem
                 sz = ob.ControllingSizer
@@ -217,48 +219,49 @@ class PemForm(dForm):
             if mult:
                 lbl = _(" -multiple- ")
             else:
-                if isSlot or isSizer:
-                    ornt = sz.Orientation[0].lower()
-                    if ornt == "h":
-                        lbl = _("Horizontal")
-                    elif ornt == "v":
-                        lbl = _("Vertical")
-                    else:
-                        lbl = _("Grid")
-                    if isSlot:
-                        lbl += _(" Sizer Slot")
-                        if ornt in ("r", "c"):
-                            lbl += ": (%s, %s)" % sz.getGridPos(ob)
-                    else:
-                        if isinstance(ob, dBorderSizer):
-                            lbl += _(" BorderSizer")
+                if sz:
+                    if isSlot or isSizer:
+                        ornt = sz.Orientation[0].lower()
+                        if ornt == "h":
+                            lbl = _("Horizontal")
+                        elif ornt == "v":
+                            lbl = _("Vertical")
                         else:
-                            lbl += _(" Sizer")
-                elif isSpacer:
-                    spc = ob.Spacing
-                    if isinstance(sz, dSizer):
-                        # We want the first position for vertical; second for horiz.
-                        isHoriz = sz.Orientation[0].lower() == "h"
-                        typ = (_("Vertical"), _("Horizontal"))[isHoriz]
+                            lbl = _("Grid")
+                        if isSlot:
+                            lbl += _(" Sizer Slot")
+                            if ornt in ("r", "c"):
+                                lbl += ": (%s, %s)" % sz.getGridPos(ob)
+                        else:
+                            if isinstance(ob, dBorderSizer):
+                                lbl += _(" BorderSizer")
+                            else:
+                                lbl += _(" Sizer")
+                    elif isSpacer:
+                        spc = ob.Spacing
+                        if isinstance(sz, dSizer):
+                            # We want the first position for vertical; second for horiz.
+                            isHoriz = sz.Orientation[0].lower() == "h"
+                            typ = (_("Vertical"), _("Horizontal"))[isHoriz]
+                        else:
+                            # Grid spacer; use both
+                            typ = _("Grid")
+                        lbl = "%s Spacer - (%s)" % (typ, spc)
+                    elif isColumn:
+                        if ob.Visible:
+                            lbl = "Column %s ('%s')" % (
+                                ob.Parent.Columns.index(ob) + 1,
+                                ob.Caption,
+                            )
+                        else:
+                            lbl = "Hidden Column ('%s')" % ob.Caption
+                    elif isNode:
+                        lbl = "TreeNode: ('%s')" % (ob.Caption)
                     else:
-                        # Grid spacer; use both
-                        typ = _("Grid")
-                    lbl = "%s Spacer - (%s)" % (typ, spc)
-                elif isColumn:
-                    if ob.Visible:
-                        lbl = "Column %s ('%s')" % (
-                            ob.Parent.Columns.index(ob) + 1,
-                            ob.Caption,
-                        )
-                    else:
-                        lbl = "Hidden Column ('%s')" % ob.Caption
-                elif isNode:
-                    lbl = "TreeNode: ('%s')" % (ob.Caption)
-                else:
-                    if hasattr(ob, "Name"):
-                        lbl = ob.Name
-                    else:
-                        lbl = ustr(ob.__class__)
+                        if hasattr(ob, "Name"):
+                            lbl = ob.Name
+                        else:
+                            lbl = ustr(ob.__class__)
         self.txtObj.Value = lbl
         self.PropSheet.select(obj)
         self.MethodList.clear()

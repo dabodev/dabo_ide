@@ -5,17 +5,18 @@ import sys
 import time
 import traceback
 
-from .. import events
-from .. import ui
-from ..application import dApp
-from ..lib.connParser import createXML
-from ..lib.untabify import process as untabify
-from ..lib.utils import ustr
-from ..localization import _
-from ..ui import dLabel
-from ..ui import dSizer
-from ..ui.dialogs import Wizard
-from ..ui.dialogs import WizardPage
+import dabo
+from dabo import events
+from dabo import ui
+from dabo.application import dApp
+from dabo.lib.connParser import createXML
+from dabo.lib.untabify import process as untabify
+from dabo.lib.utils import ustr
+from dabo.localization import _
+from dabo.ui import dLabel
+from dabo.ui import dSizer
+from dabo.ui.dialogs import Wizard
+from dabo.ui.dialogs import WizardPage
 
 
 def getSafeTableName(tableName):
@@ -47,7 +48,7 @@ class PageIntro(AppWizardPage):
             "\n\n"
             "Press 'Next' to enter database parameters."
         )
-        lbl = dabo.ui.dEditBox(
+        lbl = ui.dEditBox(
             self, Value=txt, ReadOnly=True, BorderStyle="None", BackColor=self.BackColor
         )
         self.Sizer.append1x(lbl, border=10)
@@ -153,7 +154,7 @@ class PageDatabase(AppWizardPage):
             defaultUserProfileName = profile
 
         # Set up the dropdown list based on the keys in the dbDefaults dict.
-        self.ddProfile = dabo.ui.dDropdownList(self, Name="ddProfile")
+        self.ddProfile = ui.dDropdownList(self, Name="ddProfile")
         self.ddProfile.ValueMode = "string"
         self.ddProfile.Choices = list(self.dbDefaults.keys())
         if defaultUserProfileName is not None:
@@ -162,13 +163,13 @@ class PageDatabase(AppWizardPage):
             self.ddProfile.Value = defaultProfileName
         self.ddProfile.bindEvent(events.ValueChanged, self.onProfileChoice)
 
-        cmd = dabo.ui.dButton(self, Caption=_("New Profile..."), Name="cmdNewProfile")
+        cmd = ui.dButton(self, Caption=_("New Profile..."), Name="cmdNewProfile")
         cmd.bindEvent(events.Hit, self.onNewProfile)
 
-        gs = dabo.ui.dGridSizer()
+        gs = ui.dGridSizer()
         gs.MaxCols = 2
         gs.append(lbl)
-        hs = dabo.ui.dSizer("h")
+        hs = ui.dSizer("h")
         hs.append(self.ddProfile, 1)
         hs.appendSpacer(8)
         hs.append(cmd, 0)
@@ -179,7 +180,7 @@ class PageDatabase(AppWizardPage):
         for field in self.fieldNames:
             lbl = dLabel(self, Name=("lbl%s" % field), Width=75, Caption=("%s:" % field))
             if field == "DbType":
-                obj = dabo.ui.dDropdownList(
+                obj = ui.dDropdownList(
                     self,
                     Name=("ctl%s" % field),
                     Choices=self.supportedDbTypes,
@@ -187,7 +188,7 @@ class PageDatabase(AppWizardPage):
                 )
             else:
                 pw = field.lower() == "password"
-                obj = dabo.ui.dTextBox(
+                obj = ui.dTextBox(
                     self, PasswordEntry=pw, Name=("ctl%s" % field), SelectOnEntry=True
                 )
             obj.bindEvent(events.ValueChanged, self.onParmValueChanged)
@@ -196,10 +197,10 @@ class PageDatabase(AppWizardPage):
             # Add a file search button. It will be hidden for all
             # non-file-based backends.
             if field == "Database":
-                self.btnSrch = dabo.ui.dButton(self, Caption="...")
+                self.btnSrch = ui.dButton(self, Caption="...")
                 self.btnSrch.Width = self.btnSrch.Height * 2
                 self.btnSrch.bindEvent(events.Hit, self.onDbSearch)
-                hs = self.szDB = dabo.ui.dSizer("H")
+                hs = self.szDB = ui.dSizer("H")
                 hs.append1x(obj)
                 hs.append(self.btnSrch, border=10, borderSides="left")
                 gs.append(hs, "x")
@@ -210,7 +211,7 @@ class PageDatabase(AppWizardPage):
 
     def onDbSearch(self, evt):
         """Select a file for the database"""
-        pth = dabo.ui.getFile(message=_("Select the database"))
+        pth = ui.getFile(message=_("Select the database"))
         if pth:
             self.ctlDatabase.Value = pth
             self.refresh()
@@ -238,7 +239,7 @@ class PageDatabase(AppWizardPage):
             else:
                 break
 
-        name = dabo.ui.getString(_("Please enter a name for the profile"), defaultValue=default)
+        name = ui.getString(_("Please enter a name for the profile"), defaultValue=default)
         if name is not None:
             # Defualt to the current DbType
             currDbType = self.ctlDbType.Value
@@ -293,7 +294,7 @@ class PageDatabase(AppWizardPage):
     def onLeavePage(self, direction):
         if direction == "forward":
             if len(self.Form.tableDict) > 0:
-                if not dabo.ui.areYouSure(_("Overwrite the current table information?")):
+                if not ui.areYouSure(_("Overwrite the current table information?")):
                     return True
 
             # Set the wizard's connect info based on the user input:
@@ -302,7 +303,7 @@ class PageDatabase(AppWizardPage):
             try:
                 ci.DbType = dbType
             except ValueError:
-                dabo.ui.stop(
+                ui.stop(
                     _("The database type '%s' is invalid. " + "Please reenter and try again.")
                     % dbType
                 )
@@ -321,7 +322,7 @@ class PageDatabase(AppWizardPage):
                 except ValueError:
                     ci.Port = None
             # Try to get a connection:
-            busy = dabo.ui.busyInfo(_("Connecting to database..."))
+            busy = ui.busyInfo(_("Connecting to database..."))
             try:
                 conn = dabo.db.dConnection(ci)
                 cursor = self.Form.cursor = conn.getDaboCursor(ci.getDictCursorClass())
@@ -330,7 +331,7 @@ class PageDatabase(AppWizardPage):
             except Exception as e:
                 busy = None
                 traceback.print_exc()
-                dabo.ui.stop(
+                ui.stop(
                     _(
                         "Could not connect to the database server. "
                         + "Please check your parameters and try again."
@@ -365,17 +366,17 @@ Please check all tables you want included in
 your application."""
         )
         lbl = dLabel(self, Caption=txt)
-        clb = dabo.ui.dCheckList(self, Name="clbTableSelection")
+        clb = ui.dCheckList(self, Name="clbTableSelection")
         self.Sizer.append(lbl)
         self.Sizer.append1x(clb)
-        hsz = dabo.ui.dSizer("h")
-        btn = dabo.ui.dButton(self, Caption=_("Select All"))
+        hsz = ui.dSizer("h")
+        btn = ui.dButton(self, Caption=_("Select All"))
         btn.bindEvent(events.Hit, self.onSelectAll)
         hsz.append(btn, border=5)
-        btn = dabo.ui.dButton(self, Caption=_("Invert Selection"))
+        btn = ui.dButton(self, Caption=_("Invert Selection"))
         btn.bindEvent(events.Hit, self.onInvertSelect)
         hsz.append(btn, border=5)
-        btn = dabo.ui.dButton(self, Caption=_("Select None"))
+        btn = ui.dButton(self, Caption=_("Select None"))
         btn.bindEvent(events.Hit, self.onSelectNone)
         hsz.append(btn, border=5)
         self.Sizer.append(hsz, halign="center")
@@ -410,7 +411,7 @@ your application."""
         if direction == "forward":
             self.Form.selectedTables = self.getSelection()
             if not self.Form.selectedTables:
-                dabo.ui.stop(
+                ui.stop(
                     _(
                         "No tables were selected. "
                         + "Please select the tables you want to include in your application"
@@ -452,8 +453,8 @@ class PageOutput(AppWizardPage):
         self.Sizer.appendSpacer(5)
 
         lbl = dLabel(self, Caption=_("Enter the name of your app:"))
-        self.txtAppName = dabo.ui.dTextBox(self)
-        hs = dabo.ui.dSizer("h")
+        self.txtAppName = ui.dTextBox(self)
+        hs = ui.dSizer("h")
         hs.append(lbl)
         hs.appendSpacer(5)
         hs.append1x(self.txtAppName)
@@ -467,30 +468,30 @@ You can always move the directory later."""
         lbl = dLabel(self, Caption=txt)
         self.Sizer.append(lbl)
 
-        hs = dabo.ui.dSizer("h")
-        self.txtDir = dabo.ui.dTextBox(self)
+        hs = ui.dSizer("h")
+        self.txtDir = ui.dTextBox(self)
         ##pkm: Commented this out as it looks awful on Windows.
         ##self.txtDir.FontSize=10
         self.txtDir.Value = ""
         hs.append(self.txtDir, 1)
         hs.appendSpacer(4)
 
-        self.cmdPick = dabo.ui.dButton(self, Caption="...", Width=30, Height=self.txtDir.Height)
+        self.cmdPick = ui.dButton(self, Caption="...", Width=30, Height=self.txtDir.Height)
         self.cmdPick.bindEvent(events.Hit, self.onPick)
         hs.append(self.cmdPick, 0)
         self.Sizer.append1x(hs)
 
-        self.chkPKUI = dabo.ui.dCheckBox(self, Caption=_("Include PK fields in the UI"))
+        self.chkPKUI = ui.dCheckBox(self, Caption=_("Include PK fields in the UI"))
         self.Sizer.append(self.chkPKUI)
 
-        self.chkUnknown = dabo.ui.dCheckBox(self, Caption=_("Include Unknown datatype fields"))
+        self.chkUnknown = ui.dCheckBox(self, Caption=_("Include Unknown datatype fields"))
         self.Sizer.append(self.chkUnknown)
 
-        self.chkSortFieldsAlpha = dabo.ui.dCheckBox(self, Caption=_("Sort Fields Alphabetically"))
+        self.chkSortFieldsAlpha = ui.dCheckBox(self, Caption=_("Sort Fields Alphabetically"))
         self.Sizer.append(self.chkSortFieldsAlpha)
 
     def onPick(self, evt):
-        pth = dabo.ui.getFolder(defaultPath=self.txtDir.Value)
+        pth = ui.getFolder(defaultPath=self.txtDir.Value)
         if pth:
             self.txtDir.Value = pth
 
@@ -514,7 +515,7 @@ You can always move the directory later."""
             appdir = self.txtDir.Value
             appname = self.txtAppName.Value
             if not appdir or not appname:
-                dabo.ui.stop(
+                ui.stop(
                     _("Please enter both a name for your app and a location."),
                     _("Missing Information"),
                 )
@@ -525,13 +526,13 @@ You can always move the directory later."""
                     _("The target directory %s does not exist. Do you want to create it now?")
                     % directory
                 )
-                if dabo.ui.areYouSure(msg, _("Create Directory?"), cancelButton=False):
+                if ui.areYouSure(msg, _("Create Directory?"), cancelButton=False):
                     os.makedirs(directory)
                 else:
                     return False
             else:
                 if not os.path.isdir(directory):
-                    dabo.ui.stop(
+                    ui.stop(
                         _(
                             "The target of '%s' is a pre-existing file, not a directory. "
                             "Please pick a different directory name."
@@ -568,7 +569,7 @@ class PageGo(AppWizardPage):
             else:
                 appdir = self.Form.outputDirectory
                 appname = os.path.split(appdir)[-1]
-                dabo.ui.info(
+                ui.info(
                     _(
                         """
 Your application has been created.
@@ -638,6 +639,7 @@ class AppWizard(Wizard):
         return sortedFieldNames
 
     def createApp(self):
+        import pudb ; pudb.set_trace()
         directory = self.outputDirectory
         if os.path.exists(directory):
             td = self.tableDict
@@ -804,7 +806,7 @@ python %(appName)s.py %(tableName)s
 
             # convert to spaces if user requested it:
             if self.ConvertTabs:
-                numSpaces = dabo.ui.getInt(
+                numSpaces = ui.getInt(
                     _("Enter the number of spaces for each tab:"),
                     _("Convert tabs to spaces"),
                     self.SpacesPerTab,
@@ -815,7 +817,7 @@ python %(appName)s.py %(tableName)s
             return True
 
         else:
-            dabo.ui.stop(_("The target directory does not exist. Cannot continue."))
+            ui.stop(_("The target directory does not exist. Cannot continue."))
             return False
 
     def _convertTabsToSpaces(self):
@@ -863,7 +865,7 @@ python %(appName)s.py %(tableName)s
         colDefs += """
         # Delete or comment out any columns you don't want..."""
         colSpec = """
-        self.addColumn(dabo.ui.dColumn(self, DataField="%s", 
+        self.addColumn(ui.dColumn(self, DataField="%s", 
                 Caption=biz.getColCaption("%s"),
                 Sortable=True, Searchable=True, Editable=False))
 """
@@ -883,8 +885,8 @@ python %(appName)s.py %(tableName)s
         fieldDict = self.tableDict[table]["fields"]
 
         createItems += """
-        mainSizer = self.Sizer = dabo.ui.dSizer("v")
-        gs = dabo.ui.dGridSizer(VGap=7, HGap=5, MaxCols=3)
+        mainSizer = self.Sizer = ui.dSizer("v")
+        gs = ui.dGridSizer(VGap=7, HGap=5, MaxCols=3)
 """
         sortedFieldNames = self.getSortedFieldNames(fieldDict)
 
@@ -903,7 +905,7 @@ python %(appName)s.py %(tableName)s
 
         itemSpec = """
         ## Field %(table)s.%(fieldName)s
-        label = dabo.ui.dLabel(self, NameBase="lbl%(fieldName)s", 
+        label = ui.dLabel(self, NameBase="lbl%(fieldName)s", 
                     Caption=biz.getColCaption("%(labelCaption)s"))
         objectRef = %(classRef)s(self, NameBase="%(fieldName)s",
                 DataSource="%(table)s", DataField="%(fieldName)s"%(ctrlCap)s,
@@ -923,11 +925,11 @@ python %(appName)s.py %(tableName)s
             fieldType = typeConversion.get(fieldInfo["type"], "char")
             labelCaption = fieldName
             if fieldType in ["memo", "blob"]:
-                classRef = "dabo.ui.dEditBox"
+                classRef = "ui.dEditBox"
             elif fieldType in [
                 "bool",
             ]:
-                classRef = "dabo.ui.dCheckBox"
+                classRef = "ui.dCheckBox"
                 labelCaption = ""
                 ctrlCap = ', Caption=biz.getColCaption("%s")' % fieldName
             elif fieldType in [
@@ -937,10 +939,10 @@ python %(appName)s.py %(tableName)s
                 #     it figured out, change the type of control used for date editing
                 #     to a raw dTextBox, which can handle viewing/setting dates but
                 #     doesn't have all the extra features of dDateTextBox. (2005/08/28)
-                # classRef = dabo.ui.dDateTextBox
-                classRef = "dabo.ui.dTextBox"
+                # classRef = ui.dDateTextBox
+                classRef = "ui.dTextBox"
             else:
-                classRef = "dabo.ui.dTextBox"
+                classRef = "ui.dTextBox"
             memo_sizer = ""
             if fieldType in [
                 "memo",
@@ -988,10 +990,10 @@ python %(appName)s.py %(tableName)s
                     return txt
             biz = Biz()
 
-        panel = dabo.ui.dPanel(self)
-        gsz = dabo.ui.dGridSizer(VGap=5, HGap=10)
+        panel = ui.dPanel(self)
+        gsz = ui.dGridSizer(VGap=5, HGap=10)
         gsz.MaxCols = 3
-        label = dabo.ui.dLabel(panel)
+        label = ui.dLabel(panel)
         label.Caption = _("Please enter your record selection criteria:")
         label.FontSize = label.FontSize + 2
         label.FontBold = True
@@ -1062,7 +1064,7 @@ python %(appName)s.py %(tableName)s
 
         selectOptionsPanel += """
         # Now add the limit field
-        lbl = dabo.ui.dLabel(panel)
+        lbl = ui.dLabel(panel)
         lbl.Caption =  _("&Limit:")
         limTxt = SelectTextBox(panel)
         if len(limTxt.Value) == 0:
@@ -1072,12 +1074,12 @@ python %(appName)s.py %(tableName)s
         gsz.append(limTxt)
 
         # Custom SQL checkbox:
-        chkCustomSQL = dabo.ui.dCheckBox(panel, Caption=_("Use Custom SQL"))
+        chkCustomSQL = ui.dCheckBox(panel, Caption=_("Use Custom SQL"))
         chkCustomSQL.bindEvent(events.Hit, self.onCustomSQL)
         gsz.append(chkCustomSQL)
 
         # Requery button:
-        requeryButton = dabo.ui.dButton(panel)
+        requeryButton = ui.dButton(panel)
         requeryButton.Caption =  _("&Requery")
         requeryButton.DefaultButton = True
         requeryButton.bindEvent(events.Hit, self.onRequery)
@@ -1089,7 +1091,7 @@ python %(appName)s.py %(tableName)s
         gsz.setColExpand(True, 2)
         panel.Sizer = gsz
 
-        vsz = dabo.ui.dSizer("v")
+        vsz = ui.dSizer("v")
         vsz.append(gsz, 1, "expand")
         return panel
 
@@ -1234,9 +1236,9 @@ python %(appName)s.py %(tableName)s
         with open(os.path.join(self.wizDir, "spec-sampleReport.rfxml")) as ff:
             return ff.read() % locals()
 
-    def _onConvertTabs(evt):
+    def _onConvertTabs(self, evt):
         if self.Form.chkConvertTabs.Value:
-            numSpaces = dabo.ui.getInt(
+            numSpaces = ui.getInt(
                 _("Enter the number of spaces for each tab:"),
                 _("Convert tabs to spaces"),
                 4,

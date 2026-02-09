@@ -8,8 +8,7 @@
 import datetime
 import os
 
-from ..localization import _
-from .. import ui
+from dabo.localization import _
 from .FrmReportBase import FrmReportBase
 
 

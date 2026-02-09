@@ -133,11 +133,11 @@ class ClassDesignerControlMixin(LayoutSaverMixin):
                 events.GridHeaderMouseLeftUp,
             )
             baevents = []
-            for bnd in self._eventBindings:
+            for bnd in self._event_bindings:
                 if bnd[0] not in coolEvents:
                     baevents.append(bnd)
             for bad in baevents:
-                self._eventBindings.remove(bad)
+                self._event_bindings.remove(bad)
 
             # Need to kill the sorting behavior
             def _killProcessSort(col):
@@ -155,11 +155,11 @@ class ClassDesignerControlMixin(LayoutSaverMixin):
         elif isinstance(self, (dSlidePanelControl, dSlidePanel)):
             coolEvents = (events.SlidePanelCaptionClick, events.SlidePanelChange)
             baevents = []
-            for bnd in self._eventBindings:
+            for bnd in self._event_bindings:
                 if bnd[0] not in coolEvents:
                     baevents.append(bnd)
             for bad in baevents:
-                self._eventBindings.remove(bad)
+                self._event_bindings.remove(bad)
         else:
             # This removes all previously-defined bindings
             self.unbindEvent(None)

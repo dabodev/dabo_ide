@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import sys
 
-if __name__ == "__main__":
-    sys.exit("This isn't meant to be run stand-alone. Please run `class_designer.py` instead.")
+# if __name__ == "__main__":
+#     sys.exit("This isn't meant to be run stand-alone. Please run `class_designer.py` instead.")
 import os
 import time
 
@@ -263,8 +263,8 @@ class PgOrdering(WizardPage):
     def createBody(self):
         self.Caption = _("Order Fields")
 
-        #         lbl = ui.dLabel(self, Caption="""Select a field, and then use the buttons
-        # to change its order""")
+        lbl = ui.dLabel(self, Caption="Select a field, and then use the buttons to change "
+            "its order")
         fs = self.fldSorter = ui.dEditableList(
             self,
             Caption=_("Set the field order"),
@@ -273,7 +273,7 @@ class PgOrdering(WizardPage):
             CanAdd=False,
         )
         fs.Height = 300
-        #         self.Sizer.append(lbl, 0, "x", alignment="right")
+        self.Sizer.append(lbl, 0, "x", alignment="right")
         self.Sizer.append(fs, 0, "x")
 
     def onEnterPage(self, dir):
@@ -391,7 +391,7 @@ class PgSample(WizardPage):
         else:
             style = "left"
             cs = self.controlSizer = LayoutGridSizer(MaxCols=2, HGap=0, VGap=self.BetweenSpacing)
-            cs.setColExpand(True, 1)
+            ui.callAfter(cs.setColExpand, True, 1)
         # Go through the list, and add the items to the sizer in order. Any
         # field which was previously created will be restored
         for fld in flds:
@@ -581,7 +581,7 @@ class PgSample(WizardPage):
 
     def onEndLblEdit(self, evt):
         tx = self.editText.Value
-        self.editLabel._storeCaption(tx)
+        ui.callAfter(self.editLabel._storeCaption)
         tx = self._formatCaption(tx)
         if tx:
             #### ALSO: need to update the wizard's fields
@@ -888,10 +888,9 @@ class QuickLayoutWizard(Wizard):
                 info[fld]["width"] = self.controlInfo[fld]["width"]
             ret["fldInfo"] = info
             ret["createBizobj"] = self.createBiz
-            # ui.callAfter(self.callback, ret)
             self.callback(ret)
             self.hide()
-        return False
+        return True
 
     def setConnectionName(self, nm):
         self.ConnectionName = nm
