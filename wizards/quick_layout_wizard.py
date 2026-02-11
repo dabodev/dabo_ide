@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-import sys
-
 # if __name__ == "__main__":
 #     sys.exit("This isn't meant to be run stand-alone. Please run `class_designer.py` instead.")
 import os
+import sys
 import time
 
 from dabo import application
@@ -263,8 +262,9 @@ class PgOrdering(WizardPage):
     def createBody(self):
         self.Caption = _("Order Fields")
 
-        lbl = ui.dLabel(self, Caption="Select a field, and then use the buttons to change "
-            "its order")
+        lbl = ui.dLabel(
+            self, Caption="Select a field, and then use the buttons to change its order"
+        )
         fs = self.fldSorter = ui.dEditableList(
             self,
             Caption=_("Set the field order"),

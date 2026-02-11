@@ -261,8 +261,11 @@ class PropSheet(dPanel):
                         # Can be either the item props or its own
                         try:
                             val = self.getObjPropVal(ob, prop)
-                        except:
-                            val = sz.getItemProp(szItem, prop)
+                        except Exception as e:
+                            try:
+                                val = sz.getItemProp(szItem, prop)
+                            except AttributeError:
+                                val = None
                     elif prop == "Font":
                         val = ob.FontDescription
                     elif prop == "HeaderFont":

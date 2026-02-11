@@ -23,6 +23,7 @@ from dabo.localization import _
 from dabo.ui import dBaseMenuBar
 from dabo.ui import dBitmap
 from dabo.ui import dBitmapButton
+from dabo.ui import dBorderlessButton
 from dabo.ui import dBorderSizer
 from dabo.ui import dBox
 from dabo.ui import dButton
@@ -96,6 +97,8 @@ from class_designer_sizer_palette import SizerPaletteForm
 from editor import EditorForm as TextEditorForm
 
 dabo_module = settings.get_dabo_package()
+
+CAPTION_EDITOR = "./caption_editor.cdxml"
 
 
 class PageInfoDialog(dOkCancelDialog):
@@ -479,7 +482,6 @@ class ClassDesigner(dApp):
                 base = self._selectedClass
         else:
             base = dForm
-
 
         class DesignerForm(ClassDesignerFormMixin, base):
             _superBase = base
@@ -1848,7 +1850,7 @@ class ClassDesigner(dApp):
                 else:
                     obj = cls(frm)
             for prop in obj.DesignerProps:
-                ret[prop] = getattr(obj, prop)
+                ret[prop] = getattr(obj, prop, None)
             self._classDefaultVals[cls] = ret
             if cleanup:
                 exec(cleanup, locals())
@@ -2903,9 +2905,9 @@ class ClassDesigner(dApp):
                 # Something is wrong; write it to the log and return
                 dabo_module.log.error(
                     _(
-                        "Attempted to add an object of class %(cls)s to parent %(pnl)s, but parent has no sizer information."
+                        f"Attempted to add an object of class {cls} to parent {pnl}, but "
+                        "parent has no sizer information."
                     )
-                    % locals()
                 )
                 return
 
@@ -2916,11 +2918,6 @@ class ClassDesigner(dApp):
                 szType = sz.Orientation
             # Get the defaults for this class of control.
             itmProps = self.getDefaultSizerProps(cls, szType)
-            #             if self.openingClassXML:
-            #                 # Any existing panel is an artifact of the construction process,
-            #                 # so we can ignore its properties.
-            #                 itmDefaultProps = currItemProps = {}
-            #             else:
             # Get the current props for the layout panel.
             currItemProps = sz.getItemProps(szit)
             # We need to see which ones have changed. Those
@@ -3874,8 +3871,9 @@ class ClassDesigner(dApp):
                 hsz.append(txt, 1, halign="left")
                 self.Sizer.append(hsz, halign="center")
 
-                chk = dCheckBox(self, RegID="chkBox", Caption=_("Add Sizer Box?"),
-                                OnHit=self.onHit_chkBox)
+                chk = dCheckBox(
+                    self, RegID="chkBox", Caption=_("Add Sizer Box?"), OnHit=self.onHit_chkBox
+                )
                 self.Sizer.append(chk, halign="center")
 
                 self.boxCaptionSizer = hsz = dSizer("h")
@@ -4163,7 +4161,7 @@ class ClassDesigner(dApp):
                 lbls.append(lbl)
                 # Need to add this after the fact, so that when the form is saved,
                 # the caption is different than the original value.
-                cap = f"{fldData["caption"].rstrip(":")}{colonSep}"
+                cap = f"{fldData['caption'].rstrip(':')}{colonSep}"
                 lbl.Caption = cap.title() if useTitleCase else cap
                 ctlClass = self.getControlClass(fldData["class"])
                 ctl = ctlClass(pnl, DataSource=table, DataField=fld)

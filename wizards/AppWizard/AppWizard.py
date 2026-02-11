@@ -639,7 +639,6 @@ class AppWizard(Wizard):
         return sortedFieldNames
 
     def createApp(self):
-        import pudb ; pudb.set_trace()
         directory = self.outputDirectory
         if os.path.exists(directory):
             td = self.tableDict

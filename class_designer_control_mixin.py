@@ -118,9 +118,7 @@ class ClassDesignerControlMixin(LayoutSaverMixin):
             except Exception as e:
                 nm = self.Name
                 dabo_module.error(
-                    _(
-                        "Could not set default prop value: object: %(nm)s; property: %(prop)s; error: %(e)s"
-                    )
+                    _(f"Could not set default prop value: object: {nm}; prop: {prop}; error: {e}")
                     % locals()
                 )
         # Update bindings; do control-specific things.

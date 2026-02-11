@@ -30,6 +30,7 @@ from class_designer_tree_sheet import TreeSheet
 
 class PemForm(dForm):
     """This form contains the PropSheet, the MethodSheet, and the Object Tree."""
+
     def initProperties(self):
         self.NameBase = "PemForm"
         super().initProperties()
