@@ -12,6 +12,7 @@ from dabo import events
 from dabo import settings
 from dabo import ui
 from dabo.application import dApp
+from dabo.exceptions import XmlException
 from dabo.exceptions import dException
 from dabo.lib import DesignerUtils
 from dabo.lib import utils as libutils
@@ -312,7 +313,7 @@ class ClassDesigner(dApp):
             try:
                 frm = self.openClass(clsFile)
                 clsOK = True
-            except dException.XmlException as e:
+            except XmlException as e:
                 msg = _("Error: %s\n\nA new file will be created.") % e
                 ui.stop(message=msg, title=_("Invalid XML File"))
             except IOError as e:
@@ -657,7 +658,7 @@ class ClassDesigner(dApp):
                     pth = os.path.abspath(pth)
             converter = DesignerClassConverter()
             dct = converter.dictFromStoredText(pth)
-        except dException.XmlException as e:
+        except XmlException as e:
             raise
         except Exception as e:
             if pth.strip().startswith("<?xml") or os.path.exists(pth):

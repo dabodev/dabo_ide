@@ -95,7 +95,7 @@ wheels = [
 
 [[package]]
 name = "dabo"
-version = "3.1.0"
+version = "2026.1.1"
 source = { editable = "../dabo" }
 dependencies = [
     { name = "cryptography" },
@@ -120,13 +120,12 @@ requires-dist = [
 dev = [
     { name = "black", specifier = ">=24.10.0" },
     { name = "ipython", specifier = ">=8.29.0" },
-    { name = "pytest-pudb", specifier = ">=0.7.0" },
     { name = "ruff", specifier = ">=0.8.0" },
 ]
 
 [[package]]
 name = "dabo-ide"
-version = "0.1.0"
+version = "2026.0.2"
 source = { virtual = "." }
 dependencies = [
     { name = "dabo" },

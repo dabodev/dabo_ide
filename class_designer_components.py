@@ -452,6 +452,9 @@ class LayoutSaverMixin(dObject):
                     kids = self.BaseNodes
                 else:
                     kids = self.Children
+                    if isinstance(kids, property):
+                        print(f"fget patch hit: {self} at class_designer_components.py:456")
+                        kids = kids.fget(self)
             except AttributeError:
                 # Object does not have a Children prop
                 return ret

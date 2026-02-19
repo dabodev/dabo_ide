@@ -460,13 +460,16 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
         kids = None
         if isinstance(obj, (dComboBox, dSpinner, dListControl, dRadioList)):
             # These compound controls don't need their parts listed
-            children = None
+            return
         else:
             try:
                 kids = obj.Children
-            except:
+            except AttributeError:
                 # Not an object that has a Children prop; ignore it
                 kids = None
+        if isinstance(kids, property):
+            print(f"fget patch hit: {obj} at class_designer_form_mixin.py:471")
+            kids = kids.fget(obj)
         if kids is not None:
             for ch in kids:
                 if isinstance(ch, (dForm, dToolForm, dDialog, dStatusBar, LayoutPanel)):

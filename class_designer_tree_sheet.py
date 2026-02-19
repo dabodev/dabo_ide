@@ -334,7 +334,11 @@ class TreeSheet(dPanel):
             elif isinstance(itm, LayoutPanel) and not isinstance(itm.Parent, WizardPage):
                 return
             elif isinstance(itm, NoSizerBasePanel):
-                self._recurseChildren(itm.Children, node, noDisplay=False)
+                children = itm.Children
+                if isinstance(children, property):
+                    print(f"fget patch hit: {itm} at class_designer_tree_sheet.py:339")
+                    children = children.fget(itm)
+                self._recurseChildren(children, node, noDisplay=False)
 
             elif isinstance(itm, LayoutBasePanel):
                 return self.recurseLayout(itm.Sizer, node, noDisplay=False)
@@ -380,6 +384,9 @@ class TreeSheet(dPanel):
                 except:
                     children = None
             if children:
+                if isinstance(children, property):
+                    print(f"fget patch hit: {itm} at class_designer_tree_sheet.py:387")
+                    children = children.fget(itm)
                 self._recurseChildren(children, childNode, noDisplay)
 
     def _recurseChildren(self, children, childNode, noDisplay):
