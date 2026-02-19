@@ -7,6 +7,7 @@ from dabo import events
 from dabo import settings
 from dabo import ui
 from dabo.lib import utils as libutils
+from dabo.lib.utils import get_super_property_value
 from dabo.lib.utils import ustr
 from dabo.localization import _
 from dabo.ui import dBitmap
@@ -401,20 +402,7 @@ class ClassDesignerControlMixin(LayoutSaverMixin):
                 pop.append(_("Change Node Caption"), OnHit=self.onChangeCaption)
             if not self.activeNode.IsRootNode:
                 pop.append(_("Delete this node"), OnHit=self.onDelNode)
-        elif isinstance(
-            self,
-            (
-                dLabel,
-                dButton,
-                dCheckBox,
-                dBitmapButton,
-                dToggleButton,
-                dPage,
-                dColumn,
-                dialogs.WizardPage,
-            ),
-        ):
-            pop.append(_("Change Caption"), OnHit=self.onChangeCaption)
+        pop.append(_("Customize"), OnHit=self.onCustomizeControl)
         if self.UsingSizers:
             if self.Controller.addSlotOptions(self, pop, sepBefore=True):
                 # Add the Sizer editing option
@@ -454,6 +442,18 @@ class ClassDesignerControlMixin(LayoutSaverMixin):
         self.activeNode = None
         self.removeNode(nd)
         self.Controller.updateLayout()
+
+    def _onCustomizeButton(self):
+        pass
+
+    def _onCustomizeLabel(self):
+        pass
+
+    def onCustomizeControl(self, evt):
+        cls = self.superControl
+        pop_dict = {}
+        pop = pop_dict.get(cls)
+        print(pop)
 
     def onChangeCaption(self, evt):
         if isinstance(self, dTreeView):
@@ -678,42 +678,76 @@ class ClassDesignerControlMixin(LayoutSaverMixin):
         ret = False
         return ret
 
-    ## property defs start here  ##
-    def _getChildren(self):
-        try:
-            ret = self._superBase._getChildren(self)
-        except AttributeError:
-            try:
-                ret = self.__class__.superControl._getChildren(self)
-            except:
-                ret = []
-        if isinstance(self, dialogs.WizardPage):
-            # Skip the title and separator line.
-            ret = ret[2:]
+    # NOTE: This method appears to be orphan code
+    def _getSzInfo(self):
+        sz = self.ControllingSizer
+        szit = self.ControllingSizerItem
+        props = (
+            ("X", "Expand"),
+            ("Prop", "Proportion"),
+            ("Hor", "Halign"),
+            ("Vert", "Valign"),
+        )
+        ret = ""
+        # Expand
+        if sz.getItemProp(szit, "Expand"):
+            ret = "Expand (weight=%s), Align=" % sz.getItemProp(szit, "Proportion")
+        else:
+            ret = "Fixed, Align="
+        hor = sz.getItemProp(szit, "Halign")
+        ver = sz.getItemProp(szit, "Valign")
+        ret += "%s, %s" % (ver, hor)
         return ret
 
-    def _getController(self):
+    ## property defs start here  ##
+    @property
+    def Children(self):
+        """Returns a list of the designer-relevant child controls (read-only) (list)"""
+        # superControl is a CLASS, so accessing .Children on it returns the
+        # property descriptor, not the getter result. Invoke fget directly.
+        prop = self.superControl.Children
+        if isinstance(prop, property):
+            return prop.fget(self)
+        return prop
+
+    @property
+    def Controller(self):
+        """Object to which this one reports events  (object (varies))"""
         try:
             return self._controller
         except AttributeError:
             self._controller = self.Application
             return self._controller
 
-    def _setController(self, val):
+    @Controller.setter
+    def Controller(self, val):
         if self._constructed():
             self._controller = val
         else:
             self._properties["Controller"] = val
 
-    def _getDesEvents(self):
+    @property
+    def DesignerEvents(self):
+        """
+        Returns a list of the most common events for the control. This will determine which events
+        are displayed in the PropSheet for the developer to attach code to.  (list)
+        """
         return self.Controller.getClassEvents(self._baseClass)
 
-    def _getDesProps(self):
+    @property
+    def DesignerProps(self):
+        """
+        Returns a dict of editable properties for the control, with the prop names as the keys, and
+        the value for each another dict, containing the following keys: 'type', which controls how
+        to display and edit the property, and 'readonly', which will prevent editing when True.
+        (dict)
+        """
         useSizers = self.Controller.UseSizers
         ret = {
             "Enabled": {"type": bool, "readonly": False},
             "Name": {"type": str, "readonly": False},
             "RegID": {"type": str, "readonly": False},
+            "StatusText": {"type": str, "readonly": False},
             "TabStop": {"type": bool, "readonly": False},
             "Tag": {"type": "multi", "readonly": False},
             "ToolTipText": {"type": str, "readonly": False},
@@ -1403,10 +1437,13 @@ class ClassDesignerControlMixin(LayoutSaverMixin):
 
         return ret
 
-    def _getHiliteBorderColor(self):
+    @property
+    def HiliteBorderColor(self):
+        """Color of the border when the control is selected  (str or color tuple)"""
         return self._hiliteBorderColor
 
-    def _setHiliteBorderColor(self, val):
+    @HiliteBorderColor.setter
+    def HiliteBorderColor(self, val):
         if self._constructed():
             if isinstance(val, str):
                 try:
@@ -1420,10 +1457,13 @@ class ClassDesignerControlMixin(LayoutSaverMixin):
         else:
             self._properties["HiliteBorderColor"] = val
 
-    def _getHiliteBorderLineStyle(self):
+    @property
+    def HiliteBorderLineStyle(self):
+        """Line style of the displayed border when the control is selected  (str)"""
         return self._hiliteBorderLineStyle
 
-    def _setHiliteBorderLineStyle(self, val):
+    @HiliteBorderLineStyle.setter
+    def HiliteBorderLineStyle(self, val):
         if self._constructed():
             val = self._expandPropStringValue(
                 val, ("Solid", "Dash", "Dashed", "Dot", "Dotted", "DotDash", "DashDot")
@@ -1435,10 +1475,13 @@ class ClassDesignerControlMixin(LayoutSaverMixin):
         else:
             self._properties["HiliteBorderLineStyle"] = val
 
-    def _getHiliteBorderWidth(self):
+    @property
+    def HiliteBorderWidth(self):
+        """Width of the border around the control when selected  (int)"""
         return self._hiliteBorderWidth
 
-    def _setHiliteBorderWidth(self, val):
+    @HiliteBorderWidth.setter
+    def HiliteBorderWidth(self, val):
         if self._constructed():
             self._hiliteBorderWidth = val
             if self._hiliteBorder and (self._hiliteBorder in self._drawnObjects):
@@ -1465,32 +1508,46 @@ class ClassDesignerControlMixin(LayoutSaverMixin):
         else:
             self._properties["HiliteBorderWidth"] = val
 
-    def _getIsMain(self):
-        return self._isMain
-
-    def _setIsMain(self, val):
-        self._isMain = val
-
-    def _getContainerState(self):
+    @property
+    def IsContainer(self):
+        """Can we add controls to this control?  (bool)"""
         return isinstance(self, (dPanel, dScrollPanel, dPage, dForm, dFormMain, dDialog))
 
-    def _getRegID(self):
+    @property
+    def IsMainControl(self):
+        """
+        Is this the main control of the designer, or contained within the main control?  (bool)
+        """
+        return self._isMain
+
+    @IsMainControl.setter
+    def IsMainControl(self, val):
+        self._isMain = val
+
+    # Placeholder for the actual RegID property
+    @property
+    def RegID(self):
+        """A unique identifier used for referencing by other objects. (str)"""
         ret = self._tmpRegID
         if ret is None:
             # Nothing local has been set; use the native value
             ret = self._registryID
         return ret
 
-    def _setRegID(self, val):
+    @RegID.setter
+    def RegID(self, val):
         if self._registryID:
             self._tmpRegID = val
         else:
             self._registryID = val
 
-    def _getSelected(self):
+    @property
+    def Selected(self):
+        """Is this control selected for editing?  (bool)"""
         return self._selected
 
-    def _setSelected(self, val):
+    @Selected.setter
+    def Selected(self, val):
         if val == self._selected:
             return
         oldval = self._selected
@@ -1515,97 +1572,109 @@ class ClassDesignerControlMixin(LayoutSaverMixin):
             if needRefresh:
                 self.refresh()
 
-    def _getSzBorder(self):
+    @property
+    def Sizer_Border(self):
+        """Border setting of controlling sizer item  (int)"""
         return self.ControllingSizer.getItemProp(self.ControllingSizerItem, "Border")
 
-    def _setSzBorder(self, val):
+    @Sizer_Border.setter
+    def Sizer_Border(self, val):
         self.ControllingSizer.setItemProp(self.ControllingSizerItem, "Border", val)
 
-    def _getSzBorderSides(self):
+    @property
+    def Sizer_BorderSides(self):
+        """To which sides is the border applied? (default=All  (str)"""
         return self.ControllingSizer.getItemProp(self.ControllingSizerItem, "BorderSides")
 
-    def _setSzBorderSides(self, val):
+    @Sizer_BorderSides.setter
+    def Sizer_BorderSides(self, val):
         self.ControllingSizer.setItemProp(self.ControllingSizerItem, "BorderSides", val)
 
-    def _getSzExpand(self):
+    @property
+    def Sizer_Expand(self):
+        """Expand setting of controlling sizer item  (bool)"""
         return self.ControllingSizer.getItemProp(self.ControllingSizerItem, "Expand")
 
-    def _setSzExpand(self, val):
+    @Sizer_Expand.setter
+    def Sizer_Expand(self, val):
         self.ControllingSizer.setItemProp(self.ControllingSizerItem, "Expand", val)
 
-    def _getSzColExpand(self):
+    @property
+    def Sizer_ColExpand(self):
+        """Column Expand setting of controlling grid sizer item  (bool)"""
         return self.ControllingSizer.getItemProp(self.ControllingSizerItem, "ColExpand")
 
-    def _setSzColExpand(self, val):
+    @Sizer_ColExpand.setter
+    def Sizer_ColExpand(self, val):
         self.ControllingSizer.setItemProp(self.ControllingSizerItem, "ColExpand", val)
 
-    def _getSzColSpan(self):
+    @property
+    def Sizer_ColSpan(self):
+        """Column Span setting of controlling grid sizer item  (int)"""
         return self.ControllingSizer.getItemProp(self.ControllingSizerItem, "ColSpan")
 
-    def _setSzColSpan(self, val):
-        if val == self._getSzColSpan():
+    @Sizer_ColSpan.setter
+    def Sizer_ColSpan(self, val):
+        if val == self.Sizer_ColSpan:
             return
         try:
             self.ControllingSizer.setItemProp(self, "ColSpan", val)
         except ui.GridSizerSpanException as e:
             raise PropertyUpdateException(ustr(e))
 
-    def _getSzRowExpand(self):
+    @property
+    def Sizer_RowExpand(self):
+        """Row Expand setting of controlling grid sizer item  (bool)"""
         return self.ControllingSizer.getItemProp(self.ControllingSizerItem, "RowExpand")
 
-    def _setSzRowExpand(self, val):
+    @Sizer_RowExpand.setter
+    def Sizer_RowExpand(self, val):
         self.ControllingSizer.setItemProp(self.ControllingSizerItem, "RowExpand", val)
 
-    def _getSzRowSpan(self):
+    @property
+    def Sizer_RowSpan(self):
+        """Row Span setting of controlling grid sizer item  (int)"""
         return self.ControllingSizer.getItemProp(self.ControllingSizerItem, "RowSpan")
 
-    def _setSzRowSpan(self, val):
-        if val == self._getSzRowSpan():
+    @Sizer_RowSpan.setter
+    def Sizer_RowSpan(self, val):
+        if val == self.Sizer_RowSpan:
             return
         try:
             self.ControllingSizer.setItemProp(self, "RowSpan", val)
         except ui.GridSizerSpanException as e:
             raise PropertyUpdateException(ustr(e))
 
-    def _getSzProp(self):
+    @property
+    def Sizer_Proportion(self):
+        """Proportion setting of controlling sizer item  (int)"""
         return self.ControllingSizer.getItemProp(self.ControllingSizerItem, "Proportion")
 
-    def _setSzProp(self, val):
+    @Sizer_Proportion.setter
+    def Sizer_Proportion(self, val):
         self.ControllingSizer.setItemProp(self.ControllingSizerItem, "Proportion", val)
 
-    def _getSzHalign(self):
+    @property
+    def Sizer_HAlign(self):
+        """Horizontal Alignment setting of controlling sizer item  (choice)"""
         return self.ControllingSizer.getItemProp(self.ControllingSizerItem, "Halign")
 
-    def _setSzHalign(self, val):
+    @Sizer_HAlign.setter
+    def Sizer_HAlign(self, val):
         self.ControllingSizer.setItemProp(self.ControllingSizerItem, "Halign", val)
 
-    def _getSzValign(self):
+    @property
+    def Sizer_VAlign(self):
+        """Vertical Alignment setting of controlling sizer item  (choice)"""
         return self.ControllingSizer.getItemProp(self.ControllingSizerItem, "Valign")
 
-    def _setSzValign(self, val):
+    @Sizer_VAlign.setter
+    def Sizer_VAlign(self, val):
         self.ControllingSizer.setItemProp(self.ControllingSizerItem, "Valign", val)
 
-    def _getSzInfo(self):
-        sz = self.ControllingSizer
-        szit = self.ControllingSizerItem
-        props = (
-            ("X", "Expand"),
-            ("Prop", "Proportion"),
-            ("Hor", "Halign"),
-            ("Vert", "Valign"),
-        )
-        ret = ""
-        # Expand
-        if sz.getItemProp(szit, "Expand"):
-            ret = "Expand (weight=%s), Align=" % sz.getItemProp(szit, "Proportion")
-        else:
-            ret = "Fixed, Align="
-        hor = sz.getItemProp(szit, "Halign")
-        ver = sz.getItemProp(szit, "Valign")
-        ret += "%s, %s" % (ver, hor)
-        return ret
-
-    def _getTreeDisp(self):
+    @property
+    def TreeDisplayCaption(self):
+        """Displayed text in the Designer Tree.  (tuple)"""
         if isinstance(self, dColumn):
             prfx = "Column"
             if not self.Visible:
@@ -1624,185 +1693,15 @@ class ClassDesignerControlMixin(LayoutSaverMixin):
             ret = (ustr(self.Name), self._baseClass)
         return ret
 
-    def _getUsingSizers(self):
+    @property
+    def UsingSizers(self):
+        """Convenience property. Reflects the form's UseSizers value  (bool)"""
         if self._usingSizers is None:
             try:
                 self._usingSizers = self.Form.UseSizers
             except AttributeError:
                 return True
         return self._usingSizers
-
-    Children = property(
-        _getChildren,
-        None,
-        None,
-        _("Returns a list of the designer-relevant child controls (read-only) (list)"),
-    )
-
-    Controller = property(
-        _getController,
-        _setController,
-        None,
-        _("Object to which this one reports events  (object (varies))"),
-    )
-
-    DesignerEvents = property(
-        _getDesEvents,
-        None,
-        None,
-        _(
-            """Returns a list of the most common events for the control.
-            This will determine which events are displayed in the PropSheet
-            for the developer to attach code to.  (list)"""
-        ),
-    )
-
-    DesignerProps = property(
-        _getDesProps,
-        None,
-        None,
-        _(
-            """Returns a dict of editable properties for the control, with the
-            prop names as the keys, and the value for each another dict,
-            containing the following keys: 'type', which controls how to display
-            and edit the property, and 'readonly', which will prevent editing
-            when True. (dict)"""
-        ),
-    )
-
-    HiliteBorderColor = property(
-        _getHiliteBorderColor,
-        _setHiliteBorderColor,
-        None,
-        _("Color of the border when the control is selected  (str or color tuple"),
-    )
-
-    HiliteBorderLineStyle = property(
-        _getHiliteBorderLineStyle,
-        _setHiliteBorderLineStyle,
-        None,
-        _("Line style of the displayed border when the control is selected  (str"),
-    )
-
-    HiliteBorderWidth = property(
-        _getHiliteBorderWidth,
-        _setHiliteBorderWidth,
-        None,
-        _("Width of the border around the control when selected  (int"),
-    )
-
-    IsContainer = property(
-        _getContainerState,
-        None,
-        None,
-        _("Can we add controls to this control?  (bool)"),
-    )
-
-    IsMainControl = property(
-        _getIsMain,
-        _setIsMain,
-        None,
-        _(
-            """Is this the main control of the designer, or contained within the
-            main control?  (bool)"""
-        ),
-    )
-
-    # Placeholder for the actual RegID property
-    RegID = property(
-        _getRegID,
-        _setRegID,
-        None,
-        _("A unique identifier used for referencing by other objects. (str)"),
-    )
-
-    Selected = property(
-        _getSelected,
-        _setSelected,
-        None,
-        _("Is this control selected for editing?  (bool)"),
-    )
-
-    Sizer_Border = property(
-        _getSzBorder,
-        _setSzBorder,
-        None,
-        _("Border setting of controlling sizer item  (int)"),
-    )
-
-    Sizer_BorderSides = property(
-        _getSzBorderSides,
-        _setSzBorderSides,
-        None,
-        _("To which sides is the border applied? (default=All  (str)"),
-    )
-
-    Sizer_Expand = property(
-        _getSzExpand,
-        _setSzExpand,
-        None,
-        _("Expand setting of controlling sizer item  (bool)"),
-    )
-
-    Sizer_ColExpand = property(
-        _getSzColExpand,
-        _setSzColExpand,
-        None,
-        _("Column Expand setting of controlling grid sizer item  (bool)"),
-    )
-
-    Sizer_ColSpan = property(
-        _getSzColSpan,
-        _setSzColSpan,
-        None,
-        _("Column Span setting of controlling grid sizer item  (int)"),
-    )
-
-    Sizer_RowExpand = property(
-        _getSzRowExpand,
-        _setSzRowExpand,
-        None,
-        _("Row Expand setting of controlling grid sizer item  (bool)"),
-    )
-
-    Sizer_RowSpan = property(
-        _getSzRowSpan,
-        _setSzRowSpan,
-        None,
-        _("Row Span setting of controlling grid sizer item  (int)"),
-    )
-
-    Sizer_Proportion = property(
-        _getSzProp,
-        _setSzProp,
-        None,
-        _("Proportion setting of controlling sizer item  (int)"),
-    )
-
-    Sizer_HAlign = property(
-        _getSzHalign,
-        _setSzHalign,
-        None,
-        _("Horiz. Alignment setting of controlling sizer item  (choice)"),
-    )
-
-    Sizer_VAlign = property(
-        _getSzValign,
-        _setSzValign,
-        None,
-        _("Vert. Alignment setting of controlling sizer item  (choice)"),
-    )
-
-    TreeDisplayCaption = property(
-        _getTreeDisp, None, None, _("Displayed text in the Designer Tree.  (tuple)")
-    )
-
-    UsingSizers = property(
-        _getUsingSizers,
-        None,
-        None,
-        _("Convenience property. Reflects the form's UseSizers value  (bool)"),
-    )
 
 
 if __name__ == "__main__":
