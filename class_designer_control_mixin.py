@@ -335,6 +335,14 @@ class ClassDesignerControlMixin(LayoutSaverMixin):
                     return
             self.Form.processLeftUp(self, evt)
 
+    def onMouseLeftClick(self, evt):
+        # Stop the click event so it doesn't re-enable wx event propagation.
+        # pem_mixin raises MouseLeftClick after MouseLeftUp using the same
+        # underlying wx event; without stopping it, continueEvent() would
+        # override the Skip(False) set by onMouseLeftUp, causing the EVT_LEFT_UP
+        # to propagate to the parent panel and double-select it.
+        evt.stop()
+
     def onMouseLeftDoubleClick(self, evt):
         self.Form.processLeftDoubleClick(evt)
 

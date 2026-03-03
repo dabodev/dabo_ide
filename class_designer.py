@@ -308,8 +308,8 @@ class ClassDesigner(dApp):
         clsOK = False
         if clsFile:
             clsFile = clsFile[0] if isinstance(clsFile, list) else clsFile
-            if not clsFile.endswith(".cdxml"):
-                clsFile += ".cdxml"
+            if not (clsFile.endswith(".cdxml") or clsFile.endswith(".py")):
+                clsFile += ".py"
             try:
                 frm = self.openClass(clsFile)
                 clsOK = True
@@ -643,10 +643,10 @@ class ClassDesigner(dApp):
             self.Application.HomeDirectory = hd
 
     def onEditUndo(self, evt):
-        dabo_module.log.info(_("Not implemented yet"))
+        print(_("Not implemented yet"))
 
     def onEditRedo(self, evt):
-        dabo_module.log.info(_("Not implemented yet"))
+        print(_("Not implemented yet"))
 
     def _importClassXML(self, pth):
         """Read in the XML and associated code file (if any), and
@@ -675,6 +675,12 @@ class ClassDesigner(dApp):
             # modified it.
             self._updateClassCodeRepository(sc)
         return dct
+
+    def _importClassPython(self, pth):
+        """Read a Python class file and return a designer dict."""
+        from designer_python_parser import DesignerPythonParser
+
+        return DesignerPythonParser().dict_from_python_file(pth)
 
     def _updateClassCodeRepository(self, dct):
         """Take a flattened dict of class IDs and store any code
@@ -743,7 +749,10 @@ class ClassDesigner(dApp):
         # Add to the MRU list
         self.addMRUPath(pth)
         # Translate the file path into a class dictionary.
-        clsd = self._importClassXML(pth)
+        if pth.endswith(".py"):
+            clsd = self._importClassPython(pth)
+        else:
+            clsd = self._importClassXML(pth)
         importStatements = clsd.pop("importStatements", "")
         if not importStatements:
             # If stored in a single file, 'importStatements' will be in the outermost 'code' dict.
@@ -1008,6 +1017,10 @@ class ClassDesigner(dApp):
         kids = self._recreateValsDict["kids"]
         rows = int(self._extractKey(atts, "Rows", "1"))
         cols = int(self._extractKey(atts, "Columns", "1"))
+        # SlotCount is derived from Rows*Columns — discard it so that
+        # setPropertiesFromAtts() below doesn't call the SlotCount setter
+        # and inadvertently remove the grid slots we just created.
+        self._extractKey(atts, "SlotCount", "0")
         sz, pnl = self.addSizer("grid", rows=rows, cols=cols)
         szCont = sz.ControllingSizer
         is2D = isinstance(szCont, dGridSizer)
@@ -1398,7 +1411,7 @@ class ClassDesigner(dApp):
                 cls = eval(clsname)
             except ValueError:
                 # Should never happen, so if it does, log it!
-                dabo_module.log.error("Invalid wizard page class: %s" % nm)
+                print("Invalid wizard page class: %s" % nm)
                 ui.stop("Invalid wizard page class: %s" % nm)
                 pgDct["fullname"] = nm
                 cls = ui.__dict__[nm]
@@ -1856,10 +1869,18 @@ class ClassDesigner(dApp):
             if cleanup:
                 exec(cleanup, locals())
             if not issubclass(cls, (dPage, dSlidePanel)):
-                # Pages will be released by their parent.
-                obj.release()
+                # Pages will be released by their parent. Defer the release so
+                # wx can drain any pending event bindings first; fall back to
+                # immediate release if the wx app doesn't exist yet.
+                try:
+                    ui.callAfter(obj.release)
+                except AssertionError:
+                    obj.release()
             if frm:
-                frm.release()
+                try:
+                    ui.callAfter(frm.release)
+                except AssertionError:
+                    frm.release()
         return ret
 
     def onEditCut(self, evt):
@@ -2015,6 +2036,9 @@ class ClassDesigner(dApp):
     def onSaveClassDesign(self, evt):
         self.wrapSave(self.CurrentForm.onSaveClassDesign, evt)
 
+    def onExportCdxml(self, evt):
+        self.CurrentForm.onExportCdxml(evt)
+
     def onRunDesign(self, evt):
         self.flushCodeEditor()
         currbiz = self.biz
@@ -2037,7 +2061,7 @@ class ClassDesigner(dApp):
         self.biz = currbiz
 
     def onOpenDesign(self, evt):
-        ff = ui.getFile("cdxml")
+        ff = ui.getFile("cdxml", "py")
         if ff:
             self.openClass(ff)
             ui.callAfterInterval(100, self.updateLayout)
@@ -2050,7 +2074,7 @@ class ClassDesigner(dApp):
                 self.fileToOpen = None
 
                 def onOpenSaved(evt):
-                    f = ui.getFile("cdxml")
+                    f = ui.getFile("cdxml", "py")
                     if f:
                         self.fileToOpen = f
                         self._onOK(None)
@@ -2422,9 +2446,7 @@ class ClassDesigner(dApp):
         try:
             del self._classPropDict[obj][prop]
         except Exception as e:
-            dabo_module.log.error(
-                _("Could not delete custom property '%(prop)s': %(e)s") % locals()
-            )
+            print(_("Could not delete custom property '%(prop)s': %(e)s") % locals())
 
     def editObjectProperty(self, prop):
         """Run the editor for the selected custom class property. If
@@ -2664,9 +2686,7 @@ class ClassDesigner(dApp):
                 try:
                     ret = lps[0]
                 except:
-                    dabo_module.log.error(
-                        _("Problem adding to a page: no ClassDesigner information.")
-                    )
+                    print(_("Problem adding to a page: no ClassDesigner information."))
             else:
                 ret = obj.mainPanel
         return ret
@@ -2904,7 +2924,7 @@ class ClassDesigner(dApp):
             szit = pnl.ControllingSizerItem
             if szit is None:
                 # Something is wrong; write it to the log and return
-                dabo_module.log.error(
+                print(
                     _(
                         f"Attempted to add an object of class {cls} to parent {pnl}, but "
                         "parent has no sizer information."
@@ -3502,7 +3522,7 @@ class ClassDesigner(dApp):
                         kidDct = [cd for cd in childList if cd["attributes"]["classID"] == kidID][0]
                         self.setCustomChanges(kid, kidDct)
                     except Exception as e:
-                        dabo_module.log.error(_("Error locating sizer: %s") % e)
+                        print(_("Error locating sizer: %s") % e)
         else:
             if obj.Sizer:
                 childList = dct["children"]
@@ -3511,7 +3531,7 @@ class ClassDesigner(dApp):
                     szDct = [cd for cd in childList if cd["attributes"]["classID"] == szID][0]
                     self.setCustomChanges(obj.Sizer, szDct)
                 except Exception as e:
-                    dabo_module.log.error(_("Error locating sizer: %s") % e)
+                    print(_("Error locating sizer: %s") % e)
             else:
                 if obj.Children:
                     childList = dct["children"]
@@ -3525,7 +3545,7 @@ class ClassDesigner(dApp):
                             ][0]
                             self.setCustomChanges(kid, kidDct)
                         except Exception as e:
-                            dabo_module.log.error(_("Error locating child object: %s") % e)
+                            print(_("Error locating child object: %s") % e)
 
     def onNewBox(self, evt):
         ui.callAfter(self.addNewControl, None, dBox)

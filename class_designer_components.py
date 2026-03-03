@@ -262,7 +262,7 @@ class LayoutSaverMixin(dObject):
             else:
                 # Custom-defined property; that's saved elsewhere
                 continue
-            if prop == "RegID" and not val:
+            if prop == "RegID" and (not val or not str(val).isidentifier()):
                 continue
 
             # Convert any paths, but ignore the string properties that may
@@ -678,12 +678,11 @@ class LayoutPanel(dPanel, LayoutSaverMixin):
         self.Form.processLeftUp(self, evt)
         evt.stop()
 
-    def onMouseLeftDown(self, evt):
+    def onMouseLeftClick(self, evt):
         evt.stop()
 
-    #     def onMouseLeftClick(self, evt):
-    #         shift = evt.EventData["shiftDown"]
-    #         self.Form.objectClick(self, shift)
+    def onMouseLeftDown(self, evt):
+        evt.stop()
 
     def onSelect(self, evt):
         print("PANEL ON SELECT")
@@ -2197,6 +2196,9 @@ class NoSizerBasePanel(LayoutBasePanel):
 
     def onMouseLeftUp(self, evt):
         self.Form.processLeftUp(self, evt)
+        evt.stop()
+
+    def onMouseLeftClick(self, evt):
         evt.stop()
 
     def onMouseLeftDown(self, evt):

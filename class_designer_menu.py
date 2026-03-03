@@ -136,6 +136,12 @@ def mkDesignerMenu(parent, target=None):
         )
         itm.DynamicEnabled = app.shouldEnableSaveAsClass
         fm.prepend(
+            _("Export as CDXML..."),
+            OnHit=app.onExportCdxml,
+            ItemID="file_exportcdxml",
+            help=_("Export the design as a legacy .cdxml XML file"),
+        )
+        fm.prepend(
             _("Save &As..."),
             HotKey="Ctrl+Shift+V",
             OnHit=app.onSaveAsDesign,

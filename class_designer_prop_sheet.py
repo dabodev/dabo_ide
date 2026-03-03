@@ -2,6 +2,7 @@
 import os
 import pydoc
 
+import wx
 from dabo import application
 from dabo import events
 from dabo import icons
@@ -21,6 +22,7 @@ from dabo.ui import dImage
 from dabo.ui import dKeys as dKeys
 from dabo.ui import dLabel
 from dabo.ui import dLine
+from dabo.ui import dListBox
 from dabo.ui import dOkCancelDialog
 from dabo.ui import dPanel
 from dabo.ui import dSizer
@@ -256,7 +258,10 @@ class PropSheet(dPanel):
                     rec = {}
                     rec["prop"] = prop
                     if isSlot:
-                        val = sz.getItemProp(szItem, prop)
+                        if sz is not None:
+                            val = sz.getItemProp(szItem, prop)
+                        else:
+                            val = None
                     elif isSpacer:
                         # Can be either the item props or its own
                         try:
@@ -427,93 +432,29 @@ class PropSheet(dPanel):
         an image file.
         """
         defIcons = icons.getAvailableIcons()
-
-        class IconSelectDialog(dDialog):
-            def addControls(self):
-                self.useStandard = True
-                self.Caption = _("Select a Picture")
-                sz = self.Sizer
-                sz.appendSpacer(20)
-                sz.DefaultSpacing = 10
-                sz.DefaultBorder = 20
-                sz.DefaultBorderLeft = sz.DefaultBorderRight = True
-                btn = dButton(self, Caption=_("Select your own image..."))
-                btn.bindEvent(events.Hit, self.onSelectOwn)
-                sz.append(btn, halign="center")
-                sz.append(dLine(self), border=25, borderSides=("left", "right"))
-                sz.append(dLabel(self, Caption="- or -"), halign="center")
-                lbl = dLabel(self, Caption=_("Select a standard image:"))
-                dd = dDropdownList(self, RegID="ddIcons", Choices=defIcons, OnHit=self.updImage)
-                hsz = dSizer("h")
-                hsz.append(lbl)
-                hsz.appendSpacer(5)
-                hsz.append(dd)
-                sz.append(hsz, halign="center", border=16)
-                hsz = dSizer("h")
-                img = dImage(self, Picture="", Size=(64, 64), RegID="img")
-                bsz = dBorderSizer(self)
-                bsz.append(img, border=8, halign="center", valign="middle")
-                hsz.append(bsz)
-                hsz.appendSpacer(16)
-                btn = dButton(self, Caption=_("Select"), OnHit=self.onSelect)
-                hsz.append(btn, valign="middle")
-                sz.append(hsz, halign="center")
-                sz.append(dLine(self), border=25, borderSides=("left", "right"))
-                btn = dButton(self, Caption=_("Cancel"), OnHit=self.onCancel)
-                sz.append(btn, halign="right", border=20, borderSides=("right",))
-                sz.appendSpacer(25)
-                self._selected = False
-
-            def onSelect(self, evt):
-                self._selected = True
-                self.hide()
-
-            def onCancel(self, evt):
-                self.hide()
-
-            def onSelectOwn(self, evt):
-                self.useStandard = False
-                self.hide()
-
-            def updImage(self, evt=None):
-                pic = self.ddIcons.StringValue
-                self.img.Picture = pic
-                origW, origH = self.img.getOriginalImgSize()
-                if (origW <= self.img.Width) and (origH <= self.img.Height):
-                    self.img.ScaleMode = "clip"
-                else:
-                    self.img.ScaleMode = "proportional"
-
-            def getSelectedIcon(self):
-                if self._selected:
-                    return self.ddIcons.StringValue
-                else:
-                    return None
-
-            def setCurrent(self, strval):
-                try:
-                    self.ddIcons.StringValue = strval
-                    self.updImage()
-                except ValueError:
-                    # Not the name of a std. icon; default to first
-                    self.ddIcons.PositionValue = 0
-
-        dlg = IconSelectDialog(None)
+        BROWSE = "< Browse for file... >"
+        choices = [BROWSE] + list(defIcons)
         currPic = eval("objs[0].%s" % prop)
-        dlg.setCurrent(currPic)
-        dlg.show()
-        if not dlg:
-            # User clicked the close button
-            return
-        if dlg.useStandard:
-            newVal = dlg.getSelectedIcon()
-            if newVal is not None:
-                self.propGrid.CurrentValue = newVal
-                self.updateVal(prop, newVal, str)
+        try:
+            sel_idx = choices.index(currPic)
+        except ValueError:
+            sel_idx = 0
+        dlg = wx.SingleChoiceDialog(
+            self, _("Select a standard image:"), _("Select a Picture"), choices
+        )
+        dlg.SetSelection(sel_idx)
+        result = dlg.ShowModal()
+        if result == wx.ID_OK:
+            selected = dlg.GetStringSelection()
+            dlg.Destroy()
+            if selected == BROWSE:
+                self.editPicture(objs, prop, val)
+            else:
+                self.propGrid.CurrentValue = selected
+                self.updateVal(prop, selected, str)
                 self.propGrid.refresh()
         else:
-            self.editPicture(objs, prop, val)
-        dlg.release()
+            dlg.Destroy()
 
     def editMenuBarFile(self, objs, prop, val):
         # Select a connection file

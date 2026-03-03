@@ -110,6 +110,14 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
     def afterInitAll(self):
         self.refresh()
 
+    def _idleRedraw(self):
+        # On macOS, wx.ClientDC crashes when destroyed inside a popup menu's
+        # event loop ("Unlocking Focus on wrong view").  Skip the outline
+        # redraw whenever any context menu is currently being shown.
+        if getattr(self.Application, "_popupMenuCount", 0) > 0:
+            return
+        super()._idleRedraw()
+
     def bringToFront(self):
         super().bringToFront()
 
@@ -505,13 +513,13 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
         return self._classFile
 
     def onSaveAsDesign(self, evt):
-        self._classFile = ui.getSaveAs(wildcard="cdxml")
+        self._classFile = ui.getSaveAs(wildcard="py")
         if not self._classFile:
             # User canceled
             return
         self._classFile = self._classFile.rstrip(".")
-        if not self._classFile.endswith(".cdxml"):
-            self._classFile += ".cdxml"
+        if not self._classFile.endswith(".py"):
+            self._classFile += ".py"
         self._savedState = {}
         self.onSaveDesign(evt)
 
@@ -532,14 +540,14 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
             fname = self.Application.getTempFile("cdxml", directory=loc)
         else:
             if not self._classFile:
-                self._classFile = ui.getSaveAs(wildcard="cdxml")
+                self._classFile = ui.getSaveAs(wildcard="py")
                 if not self._classFile:
                     # User canceled
                     return
                 else:
                     self._classFile = self._classFile.rstrip(".")
-                    if not self._classFile.endswith(".cdxml"):
-                        self._classFile += ".cdxml"
+                    if not self._classFile.endswith(".py"):
+                        self._classFile += ".py"
                 newFile = True
             fname = self._classFile
 
@@ -567,27 +575,37 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
             cd = propDict.get("code", {})
             cd.update({"importStatements": imp})
             propDict["code"] = cd
-        singleFile = useTmp or self.Application.getUserSetting("saveCodeInXML", False)
-        if not singleFile:
-            propDict, codeDict = self._extractCodeFromPropDict(propDict)
-        if self.useJSON:
-            textToSave = pformat(propDict)
+        # Save as Python if the target file is .py and not a temp file
+        save_as_python = fname.endswith(".py") and not useTmp
+        if save_as_python and self._formMode:
+            from designer_python_generator import DesignerPythonGenerator
+
+            file_stem = os.path.splitext(os.path.basename(fname))[0]
+            gen = DesignerPythonGenerator()
+            textToSave = gen.generate(propDict, file_stem=file_stem)
+            # Try opening the file. If it is read-only, it will raise an IOError.
+            codecs.open(fname, "w", encoding="utf-8").write(textToSave)
         else:
-            textToSave = xtd.dicttoxml(propDict)
-        # Try opening the file. If it is read-only, it will raise an
-        # IOErrorrror that the calling method can catch.
-        codecs.open(fname, "wb", encoding="utf-8").write(textToSave)
-        cfName = "%s-code.py" % os.path.splitext(fname)[0]
+            singleFile = useTmp or self.Application.getUserSetting("saveCodeInXML", False)
+            if not singleFile:
+                propDict, codeDict = self._extractCodeFromPropDict(propDict)
+            if self.useJSON:
+                textToSave = pformat(propDict)
+            else:
+                textToSave = xtd.dicttoxml(propDict)
+            # Try opening the file. If it is read-only, it will raise an IOError.
+            codecs.open(fname, "wb", encoding="utf-8").write(textToSave)
+            cfName = "%s-code.py" % os.path.splitext(fname)[0]
+            if singleFile:
+                # Delete the code file if present.
+                if os.path.exists(cfName):
+                    os.remove(cfName)
+            else:
+                # Write out the code file
+                desCode = self._createDesignerCode(codeDict)
+                codecs.open(cfName, "w", encoding="utf-8").write(desCode)
         if newFile:
             self.Controller.addMRUPath(fname)
-        if singleFile:
-            # Delete the code file if present.
-            if os.path.exists(cfName):
-                os.remove(cfName)
-        else:
-            # Write out the code file
-            desCode = self._createDesignerCode(codeDict)
-            codecs.open(cfName, "w", encoding="utf-8").write(desCode)
         if currForm:
             currForm.bringToFront()
         self.saveState()
@@ -623,6 +641,41 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
             hdr = codeHeaderTemplate % codeKey
             body.append("%s\n%s" % (hdr, code))
         return ret + "\n".join(body)
+
+    def onExportCdxml(self, evt):
+        """Export the current design as a .cdxml file (legacy XML format)."""
+        fname = ui.getSaveAs(wildcard="cdxml")
+        if not fname:
+            return
+        fname = fname.rstrip(".")
+        if not fname.endswith(".cdxml"):
+            fname += ".cdxml"
+        self.Controller.flushCodeEditor()
+        if self._formMode:
+            propDict = self.getDesignerDict()
+        else:
+            obj = self.mainPanel.Children[0]
+            obj.__setattr__(classFlagProp, self._classFile)
+            self.Controller.saveAllProps = True
+            propDict = self.getClassDesignerDict(obj)
+            self.Controller.saveAllProps = False
+        imp = self.Controller.getImportDict(self)
+        if imp:
+            cd = propDict.get("code", {})
+            cd.update({"importStatements": imp})
+            propDict["code"] = cd
+        singleFile = self.Application.getUserSetting("saveCodeInXML", False)
+        if not singleFile:
+            propDict, codeDict = self._extractCodeFromPropDict(propDict)
+        textToSave = xtd.dicttoxml(propDict)
+        codecs.open(fname, "wb", encoding="utf-8").write(textToSave)
+        cfName = "%s-code.py" % os.path.splitext(fname)[0]
+        if singleFile:
+            if os.path.exists(cfName):
+                os.remove(cfName)
+        else:
+            desCode = self._createDesignerCode(codeDict)
+            codecs.open(cfName, "w", encoding="utf-8").write(desCode)
 
     def onSaveClassDesign(self, evt):
         """Save the contents of the designer, excluding the outer form,
@@ -918,18 +971,19 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
         if not bizdir:
             if ui.areYouSure(
                 message=_(
-                    "Cannot create bizobj class without a directory. Do you want to copy the code to the clipboard?"
+                    "Cannot create bizobj class without a directory. "
+                    "Do you want to copy the code to the clipboard?"
                 ),
                 title=_("Copy Bizobj Code"),
                 cancelButton=False,
             ):
                 self.Application.copyToClipboard(bizcode)
         else:
-            fname = "%(tblTitle)sBizobj.py" % locals()
+            fname = f"{tblSafe}_bizobj.py"
             codecs.open(os.path.join(bizdir, fname), "w", encoding="utf-8").write(bizcode)
-            clsname = fname.strip(".py")
+            module_name = fname.strip(".py")
             codecs.open(os.path.join(bizdir, "__init__.py"), "a", encoding="utf-8").write(
-                "\nfrom %(clsname)s import %(clsname)s\n" % locals()
+                f"\nfrom {module_name} import {tblTitle}Bizobj\n"
             )
 
         # Now create the import code for the form.
