@@ -34,15 +34,19 @@ combine-as-imports = false
 force-single-line = true
 force-sort-within-sections = false
 
+[tool.uv.sources]
+dabo = { path = "../dabo", editable = true }
+
 [project]
 name = "dabo-ide"
-version = "2026.0.3"
+version = "2026.0.5"
 description = "Visual tools for developing Dabo applications"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "dabo",
     "pillow>=11.0.0",
+    "psycopg2>=2.9.11",
     "reportlab>=4.2.5",
     "wxpython>=4.2.2",
 ]
@@ -53,6 +57,3 @@ dev = [
     "pudb>=2025.1.5",
     "ruff>=0.15.0",
 ]
-
-[tool.uv.sources]
-dabo = { path = "../dabo", editable = true }

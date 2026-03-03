@@ -261,6 +261,7 @@ class PgLayout(WizardPage):
 class PgOrdering(WizardPage):
     def createBody(self):
         self.Caption = _("Order Fields")
+        self.BackColor = "red"
 
         lbl = ui.dLabel(
             self, Caption="Select a field, and then use the buttons to change its order"
@@ -274,7 +275,7 @@ class PgOrdering(WizardPage):
         )
         fs.Height = 300
         self.Sizer.append(lbl, 0, "x", alignment="right")
-        self.Sizer.append(fs, 0, "x")
+        self.Sizer.append(fs, 1, "x")
 
     def onEnterPage(self, dir):
         self.fldSorter.Choices = self.Wizard.flds
