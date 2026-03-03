@@ -1,0 +1,25 @@
+# -*- coding: utf-8 -*-
+
+from dabo import ui
+from .MenFileOpen import MenFileOpen
+
+
+class FrmMain(ui.dFormMain):
+
+    def afterInit(self):
+        super().afterInit()
+        self.fillFileOpenMenu()
+
+
+    def initProperties(self):
+        super().initProperties()
+        self.Icon = "daboIcon.ico"
+
+
+    def fillFileOpenMenu(self):
+        """Add the File|Open menu, with menu items for opening each form."""
+        app = self.Application
+        fileMenu = self.MenuBar.getMenu("base_file")
+        fileMenu.prependMenu(MenFileOpen(fileMenu))
+
+
