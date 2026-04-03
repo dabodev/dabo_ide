@@ -29,6 +29,16 @@ class SelectionOpDropdown(ui.dDropdownList):
     def initProperties(self):
         super().initProperties()
         self.SaveRestoreValue = True
+        self.ValueMode = "String"
+
+    def afterInit(self):
+        super().afterInit()
+        # Ensure we always have a sane default operator selected.
+        if not self.StringValue:
+            try:
+                self.StringValue = IGNORE_STRING
+            except Exception:
+                pass
 
     def initEvents(self):
         super().initEvents()
@@ -37,12 +47,14 @@ class SelectionOpDropdown(ui.dDropdownList):
 
     def onValueChanged(self, evt):
         # italicize if we are ignoring the field:
-        self.FontItalic = (IGNORE_STRING in self.Value)
+        val = self.StringValue or ""
+        self.FontItalic = (IGNORE_STRING in val)
         if self.Target:
             self.Target.FontItalic = self.FontItalic
 
     def onChoiceMade(self, evt):
-        if IGNORE_STRING not in self.StringValue:
+        val = self.StringValue
+        if val and IGNORE_STRING not in val and self.Target:
             # A comparison op was selected; let 'em enter a value
             self.Target.setFocus()
 

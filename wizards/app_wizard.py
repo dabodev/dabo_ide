@@ -271,15 +271,18 @@ class PageDatabase(AppWizardPage):
             ctl = getattr(self, "ctl%s" % fld)
             if fld in showFields:
                 val = dbdefs[fld]
-                try:
+                # For dropdowns (e.g. DbType), only assign values that are
+                # actually present in the available choices; otherwise fall
+                # back to a safe default instead of raising.
+                if hasattr(ctl, "Choices") and getattr(ctl, "ValueMode", "").lower() == "string":
+                    choices = getattr(ctl, "Choices", []) or []
+                    if val in choices:
+                        ctl.StringValue = val
+                    elif choices:
+                        ctl.StringValue = choices[0]
+                    # if there are no choices, leave the control as-is
+                else:
                     ctl.Value = val
-                except ValueError as e:
-                    if "string must be present in the choices" in ustr(e).lower():
-                        # Not sure why the saved profile dbType is empty. No time to
-                        # find out why now, but at least the AW won't crash anymore.
-                        pass
-                    else:
-                        raise
                 ctl.Visible = True
             else:
                 # Not a field used for this db type
@@ -1142,6 +1145,57 @@ python %(appName)s.py %(tableName)s
         appKey = self.appKey
         with open(os.path.join(self.wizDir, "spec-App.py.txt")) as ff:
             return ff.read() % locals()
+
+    def getPyproject(self, appName, ci):
+        """
+        Return a minimal pyproject.toml for the generated application.
+
+        We keep it intentionally simple and avoid pinning specific versions so
+        that users can adjust constraints as needed.
+        """
+
+        # Generate a PEP‑508 compatible name from the app name.
+        safe_name = re.sub(r"[^A-Za-z0-9._-]+", "-", appName).lower()
+        if not safe_name:
+            safe_name = "dabo-data-app"
+
+        dependencies = ["dabo"]
+
+        # Map Dabo DbType to the most common corresponding driver.
+        dbtype = getattr(ci, "DbType", "") or ""
+        dbtype = str(dbtype)
+        db_driver_map = {
+            "MySQL": "pymysql",
+            # The classic PostgreSQL driver expected by existing Dabo apps.
+            "PostgreSQL": "psycopg2",
+            "Firebird": "fdb",
+            "MsSQL": "pymssql",
+            # SQLite uses the stdlib sqlite3 module; no extra dependency.
+        }
+        db_dep = db_driver_map.get(dbtype)
+        if db_dep:
+            dependencies.append(db_dep)
+
+        deps_toml = ",\n    ".join(f'"{d}"' for d in dependencies)
+
+        pyproject = f"""[project]
+name = "{safe_name}"
+version = "0.1.0"
+description = "Dabo-generated desktop application"
+requires-python = ">=3.12"
+dependencies = [
+    {deps_toml}
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+# Only include real Python packages by default
+only-packages = true
+"""
+        return pyproject
 
     def getDbConnXML(self, ci):
         cxnDict = {
