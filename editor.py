@@ -58,7 +58,7 @@ class EditorEditor(dEditor):
     def addDroppedText(self, txt):
         curr = self.Value
         ss, se = self.SelectionStart, self.SelectionEnd
-        self.Value = "%s%s%s" % (curr[:ss], txt, curr[se:])
+        self.Value = f"{curr[:ss]}{txt}{curr[se:]}"
         self.SelectionStart = ss
         self.SelectionEnd = ss + len(txt)
 
@@ -204,7 +204,7 @@ class EditorPageFrame(dPageFrame):
                     self.SelectedPage = pg
                     ret = pg
             except Exception as e:
-                dabo.log.error(_("Error opening file '%(pth)s': %(e)s") % locals())
+                dabo.log_error(_("Error opening file '%(pth)s': %(e)s") % locals())
                 ui.callAfter(self.removePage, pg)
                 ret = None
         return ret
@@ -247,7 +247,7 @@ class EditorPageFrame(dPageFrame):
         if pgs:
             pg = pgs[0]
         else:
-            dabo.log.error(_("No matching page for %s") % cap)
+            dabo.log_error(_("No matching page for %s") % cap)
             return
         self.SelectedPage = pg
         pg.editor.setFocus()
@@ -373,7 +373,7 @@ class EditorForm(dForm):
             for nm, pos, iscls in flist:
                 prompt = nm
                 if not iscls:
-                    prompt = " - %s" % nm
+                    prompt = f" - {nm}"
                 itm = pop.append(prompt, OnHit=self.onFunctionPop)
                 itm.textPosition = pos
         else:
@@ -396,7 +396,7 @@ class EditorForm(dForm):
     def onIdle(self, evt):
         ed = self.CurrentEditor
         if ed:
-            self.StatusText = "Line: %s, Col: %s" % (ed.LineNumber, ed.Column)
+            self.StatusText = f"Line: {ed.LineNumber}, Col: {ed.Column}"
 
     def getTextSource(self):
         return self.pgfEditor.getTextSource()
@@ -831,7 +831,7 @@ class EditorForm(dForm):
             fontMenu.append(
                 font,
                 OnHit=self.onFontSelection,
-                ItemID="font_%s" % font.replace(" ", "_"),
+                ItemID=f"font_{font.replace(' ', '_')}",
                 menutype="Radio",
             )
         fontMenu.appendSeparator()
@@ -840,7 +840,7 @@ class EditorForm(dForm):
             fontMenu.append(
                 font,
                 OnHit=self.onFontSelection,
-                ItemID="font_%s" % font.replace(" ", "_"),
+                ItemID=f"font_{font.replace(' ', '_')}",
                 menutype="Radio",
             )
 
@@ -969,7 +969,7 @@ class EditorForm(dForm):
             target = self.pgfEditor.editFile(pth, True)
         except Exception as e:
             if justReportErrors:
-                dabo.log.error(_("Could not open file: %s") % e)
+                dabo.log_error(_("Could not open file: %s") % e)
                 target = None
             else:
                 raise

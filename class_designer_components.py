@@ -132,7 +132,7 @@ class LayoutSaverMixin(dObject):
                             classID = self.ControllingSizer.classID.split("-")[0]
                         except (IndexError, AttributeError):
                             classID = "?????"
-                ra["classID"] = "%s-%s" % (classID, myID)
+                ra["classID"] = f"{classID}-{myID}"
                 self.classID = ra["classID"]
             else:
                 if hasattr(self, "classID"):
@@ -258,7 +258,7 @@ class LayoutSaverMixin(dObject):
                 continue
 
             if hasattr(self, prop):
-                val = eval("self.%s" % prop)
+                val = eval(f"self.{prop}")
             else:
                 # Custom-defined property; that's saved elsewhere
                 continue
@@ -433,7 +433,7 @@ class LayoutSaverMixin(dObject):
         list. This enables us to maintain object order within
         a dictionary, which is otherwise unordered.
         """
-        return "d%s%s" % (strl(numItems).zfill(3), nm)
+        return f"d{strl(numItems).zfill(3)}{nm}"
 
     def getChildrenPropDict(self, clsChildren=None):
         """Iterate through the children. For controls, this will
@@ -588,7 +588,7 @@ class LayoutPanel(dPanel, LayoutSaverMixin):
         self._propDefaults = {}
         self._defaultSizerProps = {}
         for prop in list(self.DesignerProps.keys()):
-            self._propDefaults[prop] = eval("self.%s" % prop)
+            self._propDefaults[prop] = eval(f"self.{prop}")
 
     def afterInit(self):
         self.depth = self.crawlUp(self)

@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import copy
+import json
 import os
 import sys
+from pathlib import Path
 
 import cryptography
 import dabo
@@ -39,6 +41,8 @@ def flushValues(fnc):
 
 
 class EditorForm(dForm):
+    connFile = None
+
     def afterSetMenuBar(self):
         self.createMenu()
 
@@ -95,7 +99,7 @@ class EditorForm(dForm):
         self.openFile()
 
     def createControls(self):
-        self.Caption = _("Connection Editor")
+        self._set_title()
         self.bg = dPanel(self, BackColor="LightSteelBlue")
         gbsz = dGridSizer(VGap=12, HGap=5, MaxCols=2)
 
@@ -262,12 +266,17 @@ class EditorForm(dForm):
                 self.currentConn = new
                 self.name = new
             self.connectionSelector.PositionValue = idx
+            self._set_title()
 
     def onSetCrypto(self, evt):
         key = self._askForKey()
         if key:
             self.Application.CryptoKey = key
             self.updtFromForm()
+
+    def _set_title(self):
+        conn_name = Path(self.connFile).stem if self.connFile else self._defaultConnName()
+        self.Caption = _(f"Dabo Connection Editor: {conn_name}")
 
     def _askForKey(self):
         pw = ui.getString(
@@ -419,7 +428,7 @@ class EditorForm(dForm):
         self.newConnection()
         self._origConnDict = copy.deepcopy(self.connDict)
         # Set the form caption
-        self.Caption = _("Dabo Connection Editor: %s") % os.path.basename(self.connFile)
+        self._set_title()
         # Fill the controls
         self.populate()
 
@@ -487,19 +496,19 @@ class EditorForm(dForm):
         # See if the user wants to save changes (if any)
         if not self.confirmChanges():
             return
-        self.connFile = connFile
+        self.connFile = Path(connFile)
         # Read in the connection def file
         if self.connFile:
             # Make sure that the passed file exists!
-            if not os.path.exists(self.connFile):
-                dabo_module.log.error(_("The connection file '%s' does not exist.") % self.connFile)
+            if not self.connFile.exists():
+                dabo_module.log_error(_(f"The connection file '{self.connFile}' does not exist."))
                 self.connFile = None
 
         if self.connFile is None:
             f = ui.getFile(
                 self.fileExtension,
                 message=_("Select a file..."),
-                defaultPath=os.getcwd(),
+                defaultPath=Path().cwd(),
             )
             if f is not None:
                 self.connFile = f
@@ -515,7 +524,7 @@ class EditorForm(dForm):
             # Set the current connection
             self.currentConn = list(self.connDict.keys())[0]
             # Set the form caption
-            self.Caption = _("Dabo Connection Editor: %s") % os.path.basename(self.connFile)
+            self._set_title()
             # Fill the controls
             self._opening = True
             self.populate()
@@ -547,18 +556,15 @@ class EditorForm(dForm):
             if pth is None:
                 return
             else:
-                pthName = os.path.basename(pth)
-                if not pthName.split(".")[-1] == self.fileExtension:
+                pth = Path(pth)
+                pthName = pth.stem
+                pthExt = pth.suffix.replace(".", "")
+                if not pthExt == self.fileExtension:
                     # Add the extension
-                    if pth[-1] != ".":
-                        pth += "."
-                    pth += self.fileExtension
+                    pth = Path(f"{pthName}.{self.fileExtension}")
                 self.connFile = pth
-        # Create the file so that the relative pathing works correctly
-        with open(self.connFile, "w") as ff:
-            pass
-        # Get the values from the connDict, and adjust any pathing
-        # to be relative
+        self.connFile = Path(self.connFile)
+        # Get the values from the connDict, and adjust any pathing to be relative
         vals = self.relPaths(list(self.connDict.values()))
         v0 = vals[0]
         if self.isFileBasedBackend(v0["dbtype"]):
@@ -566,8 +572,12 @@ class EditorForm(dForm):
             # Blank them out, as they are not valid for file-based backends.
             v0["host"] = v0["user"] = v0["password"] = v0["port"] = ""
         xml = createXML(vals, encoding="utf-8")
+        self.connFile.write_text(xml)
         with open(self.connFile, "w") as ff:
             ff.write(xml)
+        # Write to JSON
+        self.json_file = self.connFile.with_suffix(".json")
+        self.json_file.write_text(json.dumps(vals))
         ui.callAfter(self.bringToFront)
 
     def relPaths(self, vals):

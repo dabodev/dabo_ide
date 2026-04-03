@@ -247,17 +247,14 @@ class PemForm(dForm):
                         else:
                             # Grid spacer; use both
                             typ = _("Grid")
-                        lbl = "%s Spacer - (%s)" % (typ, spc)
+                        lbl = f"{typ} Spacer - ({spc})"
                 elif isColumn:
                     if ob.Visible:
-                        lbl = "Column %s ('%s')" % (
-                            ob.Parent.Columns.index(ob) + 1,
-                            ob.Caption,
-                        )
+                        lbl = f"Column {ob.Parent.Columns.index(ob) + 1} ('{ob.Caption}')"
                     else:
-                        lbl = "Hidden Column ('%s')" % ob.Caption
+                        lbl = f"Hidden Column ('{ob.Caption}')"
                 elif isNode:
-                    lbl = "TreeNode: ('%s')" % (ob.Caption)
+                    lbl = f"TreeNode: ('{ob.Caption}')"
                 else:
                     if hasattr(ob, "Name"):
                         lbl = ob.Name

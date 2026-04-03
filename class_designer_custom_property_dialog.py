@@ -83,9 +83,9 @@ class ClassDesignerCustomPropertyDialog(dOkCancelDialog):
         # Capitalize it
         propName = propName[0].upper() + propName[1:]
         self.txtPropName.Value = propName
-        getName = "_get%s" % propName
-        setName = "_set%s" % propName
-        delName = "_del%s" % propName
+        getName = f"_get{propName}"
+        setName = f"_set{propName}"
+        delName = f"_del{propName}"
         currGet = self.txtGet.Value.strip()
         currSet = self.txtSet.Value.strip()
         currDel = self.txtDel.Value.strip()

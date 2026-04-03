@@ -699,12 +699,12 @@ class ClassDesignerControlMixin(LayoutSaverMixin):
         ret = ""
         # Expand
         if sz.getItemProp(szit, "Expand"):
-            ret = "Expand (weight=%s), Align=" % sz.getItemProp(szit, "Proportion")
+            ret = f"Expand (weight={sz.getItemProp(szit, 'Proportion')}), Align="
         else:
             ret = "Fixed, Align="
         hor = sz.getItemProp(szit, "Halign")
         ver = sz.getItemProp(szit, "Valign")
-        ret += "%s, %s" % (ver, hor)
+        ret += f"{ver}, {hor}"
         return ret
 
     ## property defs start here  ##
@@ -1692,9 +1692,9 @@ class ClassDesignerControlMixin(LayoutSaverMixin):
             else:
                 ret = (prfx, self.Parent.Columns.index(self))
         elif isinstance(self, dLabel):
-            ret = ('"%s"' % self.Caption, self._baseClass)
+            ret = (f'"{self.Caption}"', self._baseClass)
         elif isinstance(self, dTreeView.getBaseNodeClass()):
-            ret = ('"%s"' % self.Caption, self._baseClass)
+            ret = (f'"{self.Caption}"', self._baseClass)
         elif isinstance(self, dialogs.WizardPage):
             ret = "WizardPage", self.Caption
         else:

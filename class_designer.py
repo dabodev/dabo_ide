@@ -450,7 +450,7 @@ class ClassDesigner(dApp):
                 except (AttributeError, NameError):
                     return False
 
-            ret = ["on%s" % k for k, v in list(events.__dict__.items()) if safeApplies(v, cls)]
+            ret = [f"on{k}" for k, v in list(events.__dict__.items()) if safeApplies(v, cls)]
             ret.sort()
             return ret
 
@@ -980,7 +980,7 @@ class ClassDesigner(dApp):
         defaults = {True: szItemDefaults[2], False: szItemDefaults[1]}[is2D]
         defAtts = {}
         for key, val in list(defaults.items()):
-            defAtts["Sizer_%s" % key] = val
+            defAtts[f"Sizer_{key}"] = val
         defAtts.update(dictStringify(atts))
         atts = defAtts
         if isinstance(sz.Parent, dSlidePanel):
@@ -1027,7 +1027,7 @@ class ClassDesigner(dApp):
         defaults = {True: szItemDefaults[2], False: szItemDefaults[1]}[is2D]
         defAtts = {}
         for key, val in list(defaults.items()):
-            defAtts["Sizer_%s" % key] = val
+            defAtts[f"Sizer_{key}"] = val
         defAtts.update(dictStringify(atts))
         atts = defAtts
         sz.setPropertiesFromAtts(atts)
@@ -1262,9 +1262,9 @@ class ClassDesigner(dApp):
             self._extractKey(atts, "designerClass")
             for prop, val in list(atts.items()):
                 try:
-                    exec("nd.%s = %s" % (prop, val), locals())
+                    exec(f"nd.{prop} = {val}", locals())
                 except (SyntaxError, NameError):
-                    exec("nd.%s = '%s'" % (prop, val), locals())
+                    exec(f"nd.{prop} = '{val}'", locals())
             for kidnode in kidnodes:
                 kidatts = kidnode.get("attributes", {})
                 kidkids = kidnode.get("children", {})
@@ -1411,8 +1411,8 @@ class ClassDesigner(dApp):
                 cls = eval(clsname)
             except ValueError:
                 # Should never happen, so if it does, log it!
-                print("Invalid wizard page class: %s" % nm)
-                ui.stop("Invalid wizard page class: %s" % nm)
+                print(f"Invalid wizard page class: {nm}")
+                ui.stop(f"Invalid wizard page class: {nm}")
                 pgDct["fullname"] = nm
                 cls = ui.__dict__[nm]
             atts = pgDct["attributes"]
@@ -1514,7 +1514,7 @@ class ClassDesigner(dApp):
             imp = self._classImportDict.get(frm, "")
             impLines = imp.splitlines()
             if txt not in impLines:
-                imp += "\n%s" % txt
+                imp += f"\n{txt}"
             self._classImportDict[frm] = imp
 
     def getImportDict(self, frm=None):
@@ -1532,7 +1532,7 @@ class ClassDesigner(dApp):
             obj.HeaderFont = val
         else:
             if typ == "multi":
-                typ = eval("type(obj.%s)" % prop)
+                typ = eval(f"type(obj.{prop})")
             if typ is bool:
                 val = bool(val)
             if isinstance(val, str):
@@ -1544,7 +1544,7 @@ class ClassDesigner(dApp):
                 # the value in single quotes
                 strVal = "u'" + self.escapeQt(strVal) + "'"
             try:
-                exec("obj.%s = %s" % (prop, strVal))
+                exec(f"obj.{prop} = {strVal}")
             except Exception as e:
                 raise PropertyUpdateException(ustr(e))
 
@@ -1743,7 +1743,7 @@ class ClassDesigner(dApp):
                     # -                    ctl.DataSource = "self.Controller._sizerObj"
                     ctl.DataSource = obj
                     if isSlot and not (prop == "Spacing"):
-                        ctl.DataField = "Sizer_%s" % prop
+                        ctl.DataField = f"Sizer_{prop}"
                     else:
                         ctl.DataField = prop
 
@@ -1845,19 +1845,19 @@ class ClassDesigner(dApp):
                     pp = pgf.PageCount
                     pgf.PageCount += 1
                     obj = pgf.Pages[-1]
-                    cleanup = "pgf.PageCount = %s" % pp
+                    cleanup = f"pgf.PageCount = {pp}"
                 if issubclass(cls, dSlidePanel) and isinstance(srcObj.Parent, dSlidePanelControl):
                     spc = srcObj.Parent
                     pp = spc.PanelCount
                     spc.PanelCount += 1
                     obj = spc.Panels[-1]
-                    cleanup = "spc.PanelCount = %s" % pp
+                    cleanup = f"spc.PanelCount = {pp}"
                 elif issubclass(cls, dColumn):
                     grd = srcObj.Parent
                     cc = grd.ColumnCount
                     grd.ColumnCount += 1
                     obj = grd.Columns[-1]
-                    cleanup = "grd.ColumnCount = %s" % cc
+                    cleanup = f"grd.ColumnCount = {cc}"
                 elif issubclass(cls, dTreeView.getBaseNodeClass()):
                     tree = dTreeView(frm, NodeClass=cls)
                     obj = tree.appendNode(None, "")
@@ -2561,7 +2561,7 @@ class ClassDesigner(dApp):
             delCodeText = cd.get(delMethod, "")
             if not delCodeText:
                 # Create the skeleton of the method
-                delCode = ["def %s(self):" % delMethod, "    return"]
+                delCode = [f"def {delMethod}(self):", "    return"]
                 delCodeText = os.linesep.join(delCode)
             cd[delMethod] = delCodeText
         # Update the main dict
@@ -3488,12 +3488,12 @@ class ClassDesigner(dApp):
                 obj.savedClass = True
             else:
                 try:
-                    exec("obj.%s = %s" % (att, val))
+                    exec(f"obj.{att} = {val}")
                 except:
                     # If this is attribute holds strings, we need to quote the value.
                     escVal = val.replace('"', '\\"').replace("'", "\\'")
                     try:
-                        exec("obj.%s = '%s'" % (att, escVal))
+                        exec(f"obj.{att} = '{escVal}'")
                     except:
                         raise ValueError(
                             _("Could not set attribute '%(att)s' to value: %(val)s") % locals()

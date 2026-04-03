@@ -110,14 +110,6 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
     def afterInitAll(self):
         self.refresh()
 
-    def _idleRedraw(self):
-        # On macOS, wx.ClientDC crashes when destroyed inside a popup menu's
-        # event loop ("Unlocking Focus on wrong view").  Skip the outline
-        # redraw whenever any context menu is currently being shown.
-        if getattr(self.Application, "_popupMenuCount", 0) > 0:
-            return
-        super()._idleRedraw()
-
     def bringToFront(self):
         super().bringToFront()
 
@@ -595,7 +587,7 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
                 textToSave = xtd.dicttoxml(propDict)
             # Try opening the file. If it is read-only, it will raise an IOError.
             codecs.open(fname, "wb", encoding="utf-8").write(textToSave)
-            cfName = "%s-code.py" % os.path.splitext(fname)[0]
+            cfName = f"{os.path.splitext(fname)[0]}-code.py"
             if singleFile:
                 # Delete the code file if present.
                 if os.path.exists(cfName):
@@ -639,7 +631,7 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
                 while not code.endswith("\n\n\n"):
                     code += "\n"
             hdr = codeHeaderTemplate % codeKey
-            body.append("%s\n%s" % (hdr, code))
+            body.append(f"{hdr}\n{code}")
         return ret + "\n".join(body)
 
     def onExportCdxml(self, evt):
@@ -669,7 +661,7 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
             propDict, codeDict = self._extractCodeFromPropDict(propDict)
         textToSave = xtd.dicttoxml(propDict)
         codecs.open(fname, "wb", encoding="utf-8").write(textToSave)
-        cfName = "%s-code.py" % os.path.splitext(fname)[0]
+        cfName = f"{os.path.splitext(fname)[0]}-code.py"
         if singleFile:
             if os.path.exists(cfName):
                 os.remove(cfName)
@@ -763,9 +755,9 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
         pd["code"] = {}
         if code:
             # Add it to the code dict
-            codeIDbase = codeID = atts.get("code-ID", "%s-%s" % (nm, prntName))
+            codeIDbase = codeID = atts.get("code-ID", f"{nm}-{prntName}")
             while codeID in cd:
-                codeID = "%s-%s" % (codeIDbase, random.randrange(999))
+                codeID = f"{codeIDbase}-{random.randrange(999)}"
             pd["attributes"].update({"code-ID": codeID})
             cd[codeID] = code
         pd["children"] = []
@@ -960,7 +952,7 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
         loadCodeTemplate = self.getBizobjLoadTemplate()
         addFlds = []
         for fld in flds:
-            addFlds.append('        self.addField("%s")' % fld)
+            addFlds.append(f'        self.addField("{fld}")')
         fldDefs = "\n".join(addFlds)
         tq = '"' * 3
         bizcode = bizCodeTemplate % locals()
@@ -1167,7 +1159,7 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
             memberFunc = {True: max, False: min}[controlPressed]
         else:
             memberFunc = {True: min, False: max}[controlPressed]
-        newval = memberFunc([eval("ctl.%s" % edge) for ctl in slc])
+        newval = memberFunc([eval(f"ctl.{edge}") for ctl in slc])
         for ctl in slc:
             ui.setAfter(ctl, edge, newval)
         ui.callAfter(self.redrawHandles, slc)

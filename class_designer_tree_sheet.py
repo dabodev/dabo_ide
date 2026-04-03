@@ -208,9 +208,9 @@ class TreeSheet(dPanel):
             if isinstance(obj.ControllingSizer, LayoutGridSizer):
                 # Add the row,col info to the caption
                 r, c = obj.ControllingSizer.getGridPos(obj)
-                ret = "%s r:%s, c:%s" % (self._slotCaption, r, c)
+                ret = f"{self._slotCaption} r:{r}, c:{c}"
             else:
-                ret = "%s - (%s)" % (self._spacerCaption, obj.Spacing)
+                ret = f"{self._spacerCaption} - ({obj.Spacing})"
 
         elif isinstance(obj, SeparatorPanel):
             return " (Separator) "
@@ -230,7 +230,7 @@ class TreeSheet(dPanel):
             try:
                 if isinstance(obj.ControllingSizer, LayoutGridSizer):
                     r, c = obj.ControllingSizer.getGridPos(obj)
-                    dsp = ("%s r:%s, c:%s" % (dsp[0], r, c), dsp[1])
+                    dsp = (f"{dsp[0]} r:{r}, c:{c}", dsp[1])
             except:
                 pass
             ret = "%s (%s)" % dsp

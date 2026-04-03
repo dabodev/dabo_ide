@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
+
+==================================================================
+NOTE: This is a work in progress, and subject to significant changes.
+==================================================================
+
 Modernized database application wizard that builds on the original AppWizard.
 
 This keeps the proven scaffolding logic from AppWizard, but offers a slightly
@@ -21,14 +26,12 @@ from dabo import ui
 from dabo.localization import _
 from dabo.ui.dialogs import Wizard
 
-from .app_wizard import (
-    AppWizard,
-    AppWizardPage,
-    PageDatabase,
-    PageTableSelection,
-    PageOutput,
-    PageGo,
-)
+from .app_wizard import AppWizard
+from .app_wizard import AppWizardPage
+from .app_wizard import PageDatabase
+from .app_wizard import PageGo
+from .app_wizard import PageOutput
+from .app_wizard import PageTableSelection
 
 
 class PageIntroModern(AppWizardPage):
@@ -165,16 +168,12 @@ class FilterableTableSelectionPage(PageTableSelection):
         if not txt:
             new_choices = sorted(self._allTables)
         else:
-            new_choices = sorted(
-                [t for t in self._allTables if txt in t.lower()]
-            )
+            new_choices = sorted([t for t in self._allTables if txt in t.lower()])
 
         # Preserve existing selection where possible.
         current_selection = set(self.clbTableSelection.Value or [])
         self.clbTableSelection.Choices = new_choices
-        self.clbTableSelection.Value = [
-            t for t in new_choices if t in current_selection
-        ]
+        self.clbTableSelection.Value = [t for t in new_choices if t in current_selection]
 
 
 class EnhancedOutputPage(PageOutput):
@@ -270,4 +269,3 @@ if __name__ == "__main__":
     wiz = DataAppBuilderWizard(None)
 
     # No need to start the app; when the wizard exits, so will the app.
-

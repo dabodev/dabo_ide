@@ -26,7 +26,7 @@ class MenuSaverMixin(object):
             if prop in propsToExclude:
                 continue
             if hasattr(self, prop):
-                val = eval("self.%s" % prop)
+                val = eval(f"self.{prop}")
             else:
                 # Custom-defined property; that's saved elsewhere
                 continue
@@ -299,7 +299,7 @@ class CaptionPanel(MenuSaverMixin, dPanel):
         return ret
 
     def _getDisplayText(self):
-        return "%s: '%s'" % (self._commonName, self.Caption)
+        return f"{self._commonName}: '{self.Caption}'"
 
     def _getHelpText(self):
         return self._helpText
@@ -390,7 +390,7 @@ class CaptionPanel(MenuSaverMixin, dPanel):
 
     # Tree display is the same as the displayed text
     def _getTreeDisplayCaption(self):
-        return ("'%s'" % self.Caption, self._commonName)
+        return (f"'{self.Caption}'", self._commonName)
 
     AbbreviatedHotKey = property(
         _getAbbreviatedHotKey,

@@ -215,8 +215,8 @@ class MenuDesignerForm(dForm):
                     mp = mp.Parent
                 pth.reverse()
                 cap = " - ".join(pth)
-                fncText = "Function: %s" % itm._bindingText
-                seltxt = "Menu Selection: %s\n\n%s" % (cap, fncText)
+                fncText = f"Function: {itm._bindingText}"
+                seltxt = f"Menu Selection: {cap}\n\n{fncText}"
                 self.lblResult.Caption = seltxt
                 self.layout()
 
@@ -301,7 +301,7 @@ class MenuDesignerForm(dForm):
                 "HelpText": "",
                 "HotKey": "Ctrl+D",
                 "ItemID": "file_commandwin",
-                "Icon": "%s/apps/utilities-terminal.png" % iconPath,
+                "Icon": f"{iconPath}/apps/utilities-terminal.png",
             },
             "children": [],
             "name": "MenuItemPanel",
@@ -683,7 +683,7 @@ class MenuDesignerForm(dForm):
 
     def openFile(self, pth):
         if not os.path.exists(pth):
-            dabo.ui.stop("The file '%s' does not exist" % pth)
+            dabo.ui.stop(f"The file '{pth}' does not exist")
             return
         self._menuFile = pth
         xml = open(pth).read()
@@ -710,7 +710,7 @@ class MenuDesignerForm(dForm):
             # the value in single quotes
             strVal = "u'" + self.escapeQt(strVal) + "'"
         try:
-            exec("obj.%s = %s" % (prop, strVal))
+            exec(f"obj.{prop} = {strVal}")
         except Exception as e:
             raise PropertyUpdateException(ustr(e))
         self.PropForm.updatePropGrid()

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
+import re
 import sys
 import time
 import traceback
@@ -141,7 +142,7 @@ class PageDatabase(AppWizardPage):
         for profile in userProfiles:
             userDict = {}
             for field in self.fieldNames:
-                name = "dbDefaults.%s.%s" % (profile, field)
+                name = f"dbDefaults.{profile}.{field}"
                 val = app.getUserSetting(name)
                 if val is None:
                     val = ""
@@ -178,19 +179,17 @@ class PageDatabase(AppWizardPage):
         gs.setColExpand(True, 1)
 
         for field in self.fieldNames:
-            lbl = dLabel(self, Name=("lbl%s" % field), Width=75, Caption=("%s:" % field))
+            lbl = dLabel(self, Name=(f"lbl{field}"), Width=75, Caption=(f"{field}:"))
             if field == "DbType":
                 obj = ui.dDropdownList(
                     self,
-                    Name=("ctl%s" % field),
+                    Name=(f"ctl{field}"),
                     Choices=self.supportedDbTypes,
                     ValueMode="string",
                 )
             else:
                 pw = field.lower() == "password"
-                obj = ui.dTextBox(
-                    self, PasswordEntry=pw, Name=("ctl%s" % field), SelectOnEntry=True
-                )
+                obj = ui.dTextBox(self, PasswordEntry=pw, Name=(f"ctl{field}"), SelectOnEntry=True)
             obj.bindEvent(events.ValueChanged, self.onParmValueChanged)
 
             gs.append(lbl)
@@ -221,7 +220,7 @@ class PageDatabase(AppWizardPage):
         obj = evt.EventObject
         app = obj.Application
         field = obj.Name[3:]
-        name = "dbDefaults.%s.%s" % (self.ddProfile.Value, field)
+        name = f"dbDefaults.{self.ddProfile.Value}.{field}"
         app.setUserSetting(name, obj.Value)
         self.dbDefaults[self.ddProfile.Value][field] = obj.Value
         if field == "DbType":
@@ -233,7 +232,7 @@ class PageDatabase(AppWizardPage):
         base = _("New Profile")
         i = 1
         while True:
-            default = "%s %s" % (base, i)
+            default = f"{base} {i}"
             if default in self.ddProfile.Choices:
                 i += 1
             else:
@@ -268,7 +267,7 @@ class PageDatabase(AppWizardPage):
         else:
             showFields = self.serverFields
         for fld in self.fieldNames:
-            ctl = getattr(self, "ctl%s" % fld)
+            ctl = getattr(self, f"ctl{fld}")
             if fld in showFields:
                 val = dbdefs[fld]
                 # For dropdowns (e.g. DbType), only assign values that are
@@ -543,6 +542,7 @@ You can always move the directory later."""
                         % directory
                     )
                     return False
+            app = self.Application
             self.Form.outputDirectory = directory
             app.setUserSetting("defaultLocation", appdir)
 
@@ -658,7 +658,7 @@ class AppWizard(Wizard):
             formOpenString = '"Frm%s" % form_name'
 
             ## Create the main script:
-            fname = "./%s.py" % appName
+            fname = f"./{appName}.py"
             txt = ustr(self.getMain(ci.Name, selTb[0], appName))
             with open(fname, "w") as ff:
                 ff.write(txt)
@@ -686,7 +686,7 @@ python %(appName)s.py %(tableName)s
             pth = os.path.join(self.wizDir, "spec-main.exe.manifest")
             with open(pth) as ff:
                 txt = ustr(ff.read() % locals())
-            with open("./%s.exe.manifest" % appName, "w") as ff:
+            with open(f"./{appName}.exe.manifest", "w") as ff:
                 ff.write(ustr(txt))
 
             ## Create App.py:
@@ -697,9 +697,11 @@ python %(appName)s.py %(tableName)s
             with open("./version.py", "w") as ff:
                 ff.write(ustr(self.getVersion()))
 
-            ## setup.py:
-            with open("./setup.py", "w") as ff:
-                ff.write(ustr(self.getSetup(appName)))
+            ## pyproject.toml:
+            with open("./pyproject.toml", "w") as ff:
+                ff.write(ustr(self.getPyproject(appName, ci)))
+
+            # Keep legacy build scripts for users who still rely on them.
             with open("./buildwin.bat", "w") as ff:
                 ff.write(ustr(self.getBuildwin(appName)))
             with open("./buildmac", "w") as ff:
@@ -733,7 +735,7 @@ python %(appName)s.py %(tableName)s
             for table in selTb:
                 tableName = getSafeTableName(table)
                 bizImports.append(tableName)
-                with open("./%s.py" % tableName, "w") as bizfile:
+                with open(f"./{tableName}.py", "w") as bizfile:
                     txt = ustr(self.getBizobj(td, table))
                     bizfile.write(txt)
 
@@ -764,7 +766,7 @@ python %(appName)s.py %(tableName)s
 
             ## base pages:
             for page in ("PagBase", "PagSelectBase", "PagEditBase"):
-                with open("./%s.py" % page, "w") as f:
+                with open(f"./{page}.py", "w") as f:
                     f.write(ustr(self.getPagBase(page)))
 
             ## base form:
@@ -788,10 +790,10 @@ python %(appName)s.py %(tableName)s
                     ("PagEdit", self.getPagEdit),
                     ("PagSelect", self.getPagSelect),
                 ):
-                    className = "%s%s" % (classType[0], getSafeTableName(table))
+                    className = f"{classType[0]}{getSafeTableName(table)}"
                     if classType[0] == "Frm":
                         uiImports.append(className)
-                    with open("./%s.py" % className, "w") as f:
+                    with open(f"./{className}.py", "w") as f:
                         f.write(ustr(classType[1](table)))
 
             uiImports.sort()
@@ -816,6 +818,15 @@ python %(appName)s.py %(tableName)s
                 if numSpaces:
                     self.SpacesPerTab = numSpaces
                 self._convertTabsToSpaces()
+
+            # Create a local virtual environment and install dependencies
+            # for the generated application, if uv is available.
+            try:
+                os.system("uv sync")
+            except Exception:
+                # If uv is not installed or fails, we simply leave the
+                # environment setup to the user.
+                pass
             return True
 
         else:
@@ -933,7 +944,7 @@ python %(appName)s.py %(tableName)s
             ]:
                 classRef = "ui.dCheckBox"
                 labelCaption = ""
-                ctrlCap = ', Caption=biz.getColCaption("%s")' % fieldName
+                ctrlCap = f', Caption=biz.getColCaption("{fieldName}")'
             elif fieldType in [
                 "date",
             ]:
@@ -1051,7 +1062,7 @@ python %(appName)s.py %(tableName)s
                     "type": "%(fieldType)s"
                     }
         else:
-            dabo.log.error("No control class found for field '%(fieldName)s'.")
+            dabo.log_error("No control class found for field '%(fieldName)s'.")
             lbl.release()
             opList.release()
 """
@@ -1129,13 +1140,13 @@ python %(appName)s.py %(tableName)s
             return ff.read() % locals()
 
     def getModuleInit_biz(self, bizImports):
-        lines = ["from .%s import %s" % (class_, class_) for class_ in bizImports]
+        lines = [f"from .{class_} import {class_}" for class_ in bizImports]
         bizInit = os.linesep.join(lines)
         with open(os.path.join(self.wizDir, "spec-biz__init__.py.txt")) as ff:
             return ff.read() % locals()
 
     def getModuleInit_ui(self, uiImports):
-        lines = ["from .%s import %s" % (class_, class_) for class_ in uiImports]
+        lines = [f"from .{class_} import {class_}" for class_ in uiImports]
         uiInit = os.linesep.join(lines)
         with open(os.path.join(self.wizDir, "spec-ui__init__.py.txt")) as ff:
             return ff.read() % locals()
@@ -1240,14 +1251,8 @@ only-packages = true
             field_name = field[1]
             field_type = flds[field_name]["type"]
             field_pk = flds[field_name]["pk"]
-            dataStructure += """
-                ("%s", "%s", %s, "%s", "%s"),""" % (
-                field_name,
-                field_type,
-                field_pk,
-                tableNameQt,
-                field_name,
-            )
+            dataStructure += f"""
+                ("{field_name}", "{field_type}", {field_pk}, "{tableNameQt}", "{field_name}"),"""
         dataStructure += "\n        )"
 
         with open(os.path.join(self.wizDir, "spec-Biz.py.txt")) as ff:
@@ -1274,7 +1279,7 @@ only-packages = true
             return ff.read() % locals()
 
     def getPagBase(self, pageName):
-        with open(os.path.join(self.wizDir, "spec-%s.py.txt" % pageName)) as ff:
+        with open(os.path.join(self.wizDir, f"spec-{pageName}.py.txt")) as ff:
             return ff.read() % locals()
 
     def getVersion(self):

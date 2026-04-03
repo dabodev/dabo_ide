@@ -297,7 +297,7 @@ class PropSheet(dPanel):
         """Return the docstring for the passed property."""
         if isinstance(obj, (LayoutSpacerPanel, LayoutPanel)):
             obj = obj.ControllingSizer
-            prop = "Sizer_%s" % prop
+            prop = f"Sizer_{prop}"
         try:
             doc = getattr(obj.__class__, prop).__doc__
         except AttributeError:
@@ -317,7 +317,7 @@ class PropSheet(dPanel):
             if len(line) == 0:
                 body += "\n"
             body += line.strip() + " "
-        ret = "%s\n\n%s" % (doc[0], body)
+        ret = f"{doc[0]}\n\n{body}"
         return ret.strip()
 
     def getObjPropVal(self, obj, prop):
@@ -327,7 +327,7 @@ class PropSheet(dPanel):
             # Object is being destroyed
             return
         if hasattr(obj, prop):
-            ret = eval("obj.%s" % prop)
+            ret = eval(f"obj.{prop}")
         else:
             # Custom-defined property
             propDict = self.Controller.getPropDictForObject(obj)
@@ -363,13 +363,13 @@ class PropSheet(dPanel):
             if prop == "Font":
                 val = ob.FontDescription
             else:
-                val = eval("ob.%s" % prop)
+                val = eval(f"ob.{prop}")
             pg.setValue(row, 1, val)
 
     def setCustomEditor(self, ed, propName):
         if isinstance(ed, str):
             # it is the name of a method in this class
-            ed = eval("self.%s" % ed)
+            ed = eval(f"self.{ed}")
         self._custEditor = ed
         self.btnEdit.Caption = _("Edit %s") % propName
         self.btnEdit.Visible = ed is not None
@@ -434,7 +434,7 @@ class PropSheet(dPanel):
         defIcons = icons.getAvailableIcons()
         BROWSE = "< Browse for file... >"
         choices = [BROWSE] + list(defIcons)
-        currPic = eval("objs[0].%s" % prop)
+        currPic = eval(f"objs[0].{prop}")
         try:
             sel_idx = choices.index(currPic)
         except ValueError:

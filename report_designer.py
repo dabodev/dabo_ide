@@ -163,11 +163,11 @@ def DesignerController():
                 if isinstance(typ, str):
                     if typ[:7] == "Field: ":
                         # Testcursor field. Create string object with expr of this field.
-                        defaultProps["expr"] = "self.%s" % typ[7:].strip()
+                        defaultProps["expr"] = f"self.{typ[7:].strip()}"
                         typ = String
                     elif typ[:10] == "Variable: ":
                         # Report Variable: Create string object with expr of this variable.
-                        defaultProps["expr"] = "self.%s" % typ[10:].strip()
+                        defaultProps["expr"] = f"self.{typ[10:].strip()}"
                         typ = String
 
                 ## Want to put the object where the mouse was, however there are things to
@@ -279,7 +279,7 @@ def DesignerController():
                                 submenu.append(
                                     field,
                                     OnHit=onNewObject,
-                                    Tag="%s: %s" % (cap, field),
+                                    Tag=f"{cap}: {field}",
                                 )
                             objectChoices.appendMenu(submenu)
                     menu.appendMenu(objectChoices)
@@ -852,8 +852,8 @@ class ReportObjectTree(dTreeView):
                 elif caption.lower() in ("variable",):
                     caption = frm.getProp("Name", evaluate=False)
                 else:
-                    expr = ": %s" % expr
-                    caption = "%s%s" % (frm.__class__.__name__, expr)
+                    expr = f": {expr}"
+                    caption = f"{frm.__class__.__name__}{expr}"
         return caption
 
     def refreshSelection(self):
@@ -926,7 +926,7 @@ class ReportPropSheet(ClassDesignerPropSheet.PropSheet):
         if typ == "color":
             # need to convert from rgb to reportlab rgb, and stringify.
             val = rdc.ActiveEditor._rw.getReportLabColorTuple(val)
-            val = "(%.3f, %.3f, %.3f)" % (val[0], val[1], val[2])
+            val = f"({val[0]:.3f}, {val[1]:.3f}, {val[2]:.3f})"
         for obj in self._selected:
             obj.setProp(prop, val)
             if isinstance(obj, Group) and prop.lower() == "expr":
@@ -1352,11 +1352,7 @@ class DesignerBand(DesignerPanel):
             locktext = "(locked)"
         else:
             locktext = ""
-        cap = "(%s) height:%s %s" % (
-            self.ReportObject.__class__.__name__,
-            self.getProp("Height"),
-            locktext,
-        )
+        cap = f"({self.ReportObject.__class__.__name__}) height:{self.getProp('Height')} {locktext}"
         return cap
 
     def onPaint(self, evt):
@@ -1673,7 +1669,7 @@ class DesignerBand(DesignerPanel):
             try:
                 vale = eval(val)
             except:
-                vale = "?: %s" % ustr(val)
+                vale = f"?: {ustr(val)}"
         else:
             vale = val
         return vale
@@ -1941,25 +1937,15 @@ class ReportDesigner(dScrollPanel):
                     st = ""
             else:
                 if isinstance(so, (SpanningLine, SpanningRectangle)):
-                    st = "x:%s y:%s  xFooter:%s yFooter:%s" % (
-                        so.getProp("x"),
-                        so.getProp("y"),
-                        so.getProp("xFooter"),
-                        so.getProp("yFooter"),
-                    )
+                    st = f"x:{so.getProp('x')} y:{so.getProp('y')}  xFooter:{so.getProp('xFooter')} yFooter:{so.getProp('yFooter')}"
                 else:
-                    st = "x:%s y:%s  width:%s height:%s" % (
-                        so.getProp("x"),
-                        so.getProp("y"),
-                        so.getProp("width"),
-                        so.getProp("Height"),
-                    )
+                    st = f"x:{so.getProp('x')} y:{so.getProp('y')}  width:{so.getProp('width')} height:{so.getProp('Height')}"
         elif len(so) > 1:
             st = " -multiple objects selected- "
         else:
             st = ""
 
-        st += " Zoom: %s" % self.ZoomPercent
+        st += f" Zoom: {self.ZoomPercent}"
         self.Form.setStatusText(st)
 
     def clearReportForm(self):
@@ -1985,7 +1971,7 @@ class ReportDesigner(dScrollPanel):
         """Decides whether user should be prompted to save, and whether to save."""
         result = True
         if self._rw._isModified():
-            result = dabo.ui.areYouSure("Save changes to file %s?" % self._fileName)
+            result = dabo.ui.areYouSure(f"Save changes to file {self._fileName}?")
             if result:
                 self.saveFile()
         return result
@@ -2031,7 +2017,7 @@ class ReportDesigner(dScrollPanel):
                 break
             if os.path.exists(fname):
                 r = dabo.ui.areYouSure(
-                    "File '%s' already exists. Do you want to overwrite it?" % fname,
+                    f"File '{fname}' already exists. Do you want to overwrite it?",
                     defaultNo=True,
                 )
 
@@ -2083,11 +2069,7 @@ class ReportDesigner(dScrollPanel):
             modstr = "* "
         else:
             modstr = ""
-        self.Form.Caption = "%s%s: %s" % (
-            modstr,
-            self.Form._captionBase,
-            self._fileName,
-        )
+        self.Form.Caption = f"{modstr}{self.Form._captionBase}: {self._fileName}"
 
     def newFile(self):
         if self.closeFile():
@@ -2123,7 +2105,7 @@ class ReportDesigner(dScrollPanel):
             ):
                 rdc.ReportForm.convertParagraphsToMemos()
         else:
-            raise ValueError("File %s does not exist." % fileSpec)
+            raise ValueError(f"File {fileSpec} does not exist.")
         return True
 
     def reInitReportForm(self):
@@ -2145,9 +2127,9 @@ class ReportDesigner(dScrollPanel):
         def addBand(bandObj):
             caption = bandObj.__class__.__name__
             if isinstance(bandObj, (GroupHeader, GroupFooter)):
-                caption = "%s: %s" % (caption, bandObj.parent.get("expr"))
-            self._rulers["%s-left" % caption] = self.getRuler("l")
-            self._rulers["%s-right" % caption] = self.getRuler("r")
+                caption = f"{caption}: {bandObj.parent.get('expr')}"
+            self._rulers[f"{caption}-left"] = self.getRuler("l")
+            self._rulers[f"{caption}-right"] = self.getRuler("r")
             b = DesignerBand(self, Caption=caption)
             b.ReportObject = bandObj
             bandObj.DesignerObject = b
@@ -2236,11 +2218,11 @@ class ReportDesigner(dScrollPanel):
             else:
                 band.Top = self._bands[index - 1].Top + self._bands[index - 1].Height
 
-            lr = self._rulers["%s-left" % band.Caption]
+            lr = self._rulers[f"{band.Caption}-left"]
             lr.Length = bandCanvasHeight
             lr.pointLength = pointLength
 
-            rr = self._rulers["%s-right" % band.Caption]
+            rr = self._rulers[f"{band.Caption}-right"]
             rr.Length = bandCanvasHeight
             rr.pointLength = pointLength
 
@@ -2462,7 +2444,7 @@ class ReportDesigner(dScrollPanel):
         return self._zoom * 1.515
 
     def _getZoomPercent(self):
-        return "%s%%" % (int(self._zoom * 100),)
+        return f"{int(self._zoom * 100)}%"
 
     def _getZoom(self):
         return self._zoom
@@ -2706,7 +2688,7 @@ class ReportDesignerForm(dForm):
         fileMenu.prepend(
             ("Save &As"),
             OnHit=self.onFileSaveAs,
-            bmp="%s/saveAs.png" % iconPath,
+            bmp=f"{iconPath}/saveAs.png",
             help=("save"),
         )
         # saveasitem = wx.MenuItem()
@@ -2716,7 +2698,7 @@ class ReportDesignerForm(dForm):
             ("&Save"),
             HotKey="Ctrl+S",
             OnHit=self.onFileSave,
-            bmp="%s/save.png" % iconPath,
+            bmp=f"{iconPath}/save.png",
             help=("Save file"),
         )
 
@@ -2724,7 +2706,7 @@ class ReportDesignerForm(dForm):
             _("&Close"),
             HotKey="Ctrl+W",
             OnHit=self.onFileClose,
-            bmp="%s/close.png" % iconPath,
+            bmp=f"{iconPath}/close.png",
             help=("Close file"),
         )
 
@@ -2732,7 +2714,7 @@ class ReportDesignerForm(dForm):
             _("&Open"),
             HotKey="Ctrl+O",
             OnHit=self.onFileOpen,
-            bmp="%s/open.png" % iconPath,
+            bmp=f"{iconPath}/open.png",
             help=("Open file"),
         )
 
@@ -2740,7 +2722,7 @@ class ReportDesignerForm(dForm):
             _("&New"),
             HotKey="Ctrl+N",
             OnHit=self.onFileNew,
-            bmp="%s/new.png" % iconPath,
+            bmp=f"{iconPath}/new.png",
             help=("New file"),
         )
 
@@ -2775,7 +2757,7 @@ class ReportDesignerForm(dForm):
             _("Zoom &In"),
             HotKey="Ctrl+]",
             OnHit=self.onViewZoomIn,
-            bmp="%s/zoomin.png" % iconPath,
+            bmp=f"{iconPath}/zoomin.png",
             help=("Zoom In"),
         )
 
@@ -2783,7 +2765,7 @@ class ReportDesignerForm(dForm):
             _("&Normal Zoom"),
             HotKey="Ctrl+\\",
             OnHit=self.onViewZoomNormal,
-            bmp="%s/zoomNormal.png" % iconPath,
+            bmp=f"{iconPath}/zoomNormal.png",
             help=("Normal Zoom"),
         )
 
@@ -2791,7 +2773,7 @@ class ReportDesignerForm(dForm):
             _("Zoom &Out"),
             HotKey="Ctrl+[",
             OnHit=self.onViewZoomOut,
-            bmp="%s/zoomOut.png" % iconPath,
+            bmp=f"{iconPath}/zoomOut.png",
             help=("Zoom Out"),
         )
 
@@ -2844,7 +2826,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         for fileSpec in sys.argv[1:]:
             form = ReportDesignerForm()
-            form.editor.openFile("%s" % fileSpec)
+            form.editor.openFile(f"{fileSpec}")
             form.Visible = True
     else:
         form = ReportDesignerForm()

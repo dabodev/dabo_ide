@@ -64,7 +64,7 @@ class EditorControl(dEditor):
         else:
             flg = re.I
         if wholeWord:
-            adjFindString = r"\b%s\b" % adjFindString
+            adjFindString = rf"\b{adjFindString}\b"
         mtch = re.search(adjFindString, curr, flg)
         if mtch:
             mstart, mend = mtch.span()
@@ -77,7 +77,7 @@ class EditorControl(dEditor):
 
             if action == "Replace":
                 txt = self.Value
-                self.Value = "%s%s%s" % (txt[:start], replaceString, txt[end:])
+                self.Value = f"{txt[:start]}{replaceString}{txt[end:]}"
                 end = start + len(replaceString)
             self.SelectionPosition = (start, end)
             return True
@@ -109,8 +109,8 @@ class EditorControl(dEditor):
             dabo_module.error(_("Bad object ref returned to _makeContainingClassIntoSelf()"))
             return None
         try:
-            args = "ui.%s" % ustr(obj.BaseClass).split("'")[1].split(".")[-1]
-            classdef = "class self(%s): pass" % args
+            args = f"ui.{ustr(obj.BaseClass).split("'")[1].split('.')[-1]}"
+            classdef = f"class self({args}): pass"
             exec(classdef, self._namespaces)
         except:
             # Couldn't fake the reference
@@ -340,10 +340,10 @@ class EditorForm(dForm):
 
         for number in [2, 4, 6, 8, 16]:
             self._tabMenu.append(
-                _("Tab Size %s" % number),
+                _(f"Tab Size {number}"),
                 OnHit=self.onTabSize,
                 bmp="",
-                help=_("Set Tab Size To %s" % number),
+                help=_(f"Set Tab Size To {number}"),
                 menutype="radio",
             )
         self._tabMenu.Children[1].Checked = True
@@ -390,7 +390,7 @@ class EditorForm(dForm):
         return " ".join(cd)
 
     def _getMethodBase(self, mthd, isEvt):
-        cd = ("def %s(self):" % mthd, "def %s(self, evt):" % mthd)
+        cd = (f"def {mthd}(self):", f"def {mthd}(self, evt):")
         if isEvt is None:
             return cd
         else:
@@ -450,7 +450,7 @@ class EditorForm(dForm):
         except:
             # See if the method name is prepended with '*'
             try:
-                self.ddMethod.StringValue = "*%s" % mthd
+                self.ddMethod.StringValue = f"*{mthd}"
             except ValueError:
                 # Add it!
                 chc = self.ddMethod.Choices
@@ -484,7 +484,7 @@ class EditorForm(dForm):
             compile(compText, "", "exec")
             ui.exclaim(_("No syntax errors found!"), _("Compilation Succeeded"))
         except SyntaxError as e:
-            errMsg = "%s" % e
+            errMsg = f"{e}"
             try:
                 msg, num = self._syntaxLinePat.findall(errMsg)[0]
             except (ValueError, IndexError):
@@ -531,7 +531,7 @@ class EditorForm(dForm):
             mthds = list(cd[obj].keys())
             mthds.sort()
             for mthd in mthds:
-                itm = pop.append("   -  %s" % mthd, OnHit=goToCode)
+                itm = pop.append(f"   -  {mthd}", OnHit=goToCode)
                 itm.obj = obj
                 itm.mthd = mthd
             pop.appendSeparator()
@@ -585,7 +585,7 @@ class EditorForm(dForm):
         for mthd in codeKeys:
             if code[mthd]:
                 # There is code
-                chc.append("*%s" % mthd)
+                chc.append(f"*{mthd}")
                 try:
                     mthds.remove(mthd)
                 except:
@@ -676,7 +676,7 @@ class EditorForm(dForm):
             keylist = []
             for lev, obj in self._objHierarchy:
                 try:
-                    chc.append("%s %s" % ("-" * lev, obj.Name))
+                    chc.append(f"{'-' * lev} {obj.Name}")
                     keylist.append(obj)
                 except:
                     dabo_module.error(_("Could not add to hierarchy: %s") % obj)
@@ -736,7 +736,7 @@ class EditorForm(dForm):
             if objCode:
                 txt = self._extractImports(txt)
                 # Make sure the text ends in a newline
-                txt = "%s\n" % txt.strip()
+                txt = f"{txt.strip()}\n"
                 objCode[mthd] = txt
             else:
                 rep[obj] = {}
@@ -799,7 +799,7 @@ class EditorForm(dForm):
             else:
                 flg = re.I
             if wholeWord:
-                txt = r"\b%s\b" % txt
+                txt = rf"\b{txt}\b"
             codeDict = self.CodeRepository[obj]
             if mthds is None:
                 mthds = list(codeDict.keys())
@@ -833,15 +833,11 @@ class EditorForm(dForm):
                         start = end - len(findString)
                     self.ddObject.KeyValue = obj
                     self.refreshStatus()
-                    self.ddMethod.StringValue = "*%s" % mthd
+                    self.ddMethod.StringValue = f"*{mthd}"
                     self.checkObjMethod()
                     if action == "Replace":
                         txt = self.editor.Value
-                        self.editor.Value = "%s%s%s" % (
-                            txt[:start],
-                            replaceString,
-                            txt[end:],
-                        )
+                        self.editor.Value = f"{txt[:start]}{replaceString}{txt[end:]}"
                         end = start + len(replaceString)
                     self.editor.SelectionPosition = (start, end)
                     return True

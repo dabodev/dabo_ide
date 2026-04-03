@@ -492,7 +492,7 @@ class PgSample(WizardPage):
         if self.UseTitleCase:
             cap = cap.title()
         if self.UseColons:
-            cap = "%s:" % cap.rstrip(":")
+            cap = f"{cap.rstrip(':')}:"
         else:
             cap = cap.rstrip(":")
         return cap
