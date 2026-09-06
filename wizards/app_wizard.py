@@ -43,7 +43,7 @@ class PageIntro(AppWizardPage):
             "and edit the results. You can then edit the resulting "
             "application to fit your exact requirements. "
             "\n\n"
-            "Right now Dabo supports the MySQL, Firebird, "
+            "Right now Dabo supports the MySQL, "
             "PostgreSQL, Microsoft SQL Server and SQLite databases. "
             "In time the number of supported databases will grow."
             "\n\n"
@@ -78,15 +78,6 @@ class PageDatabase(AppWizardPage):
             "Password": "",
             "Port": "3306",
             "Name": "MySQL-default",
-        }
-        self.dbDefaults["Firebird"] = {
-            "DbType": "Firebird",
-            "Host": "",
-            "Database": "",
-            "User": "",
-            "Password": "",
-            "Port": "3050",
-            "Name": "Firebird-default",
         }
         self.dbDefaults["PostgreSQL"] = {
             "DbType": "PostgreSQL",
@@ -344,9 +335,6 @@ class PageDatabase(AppWizardPage):
             self.Form.tableDict = {}
             tableOrder = 0
             for table in tables:
-                # Firebird databases have system tables with '$' in the name
-                if table.find("$") > -1:
-                    continue
                 tableDict = {}
                 tableDict["name"] = table
                 tableDict["order"] = tableOrder
@@ -669,9 +657,9 @@ class AppWizard(Wizard):
             filecont = (
                 """
 # go.sh
-# launches the %(appName)s app.
+# launches the %(appName)s app using `uv`.
 cd %(outdir)s
-python %(appName)s.py %(tableName)s
+$(command -v uv) run python %(appName)s.py %(tableName)s
 # python %(appName)s.py --OpenAll""".strip()
                 % locals()
             )
@@ -1177,9 +1165,9 @@ python %(appName)s.py %(tableName)s
         dbtype = str(dbtype)
         db_driver_map = {
             "MySQL": "pymysql",
-            # The classic PostgreSQL driver expected by existing Dabo apps.
-            "PostgreSQL": "psycopg2",
-            "Firebird": "fdb",
+            # psycopg2-binary ships prebuilt wheels; plain psycopg2 requires a
+            # local libpq/pg_config toolchain and fails to build under uv.
+            "PostgreSQL": "psycopg2-binary",
             "MsSQL": "pymssql",
             # SQLite uses the stdlib sqlite3 module; no extra dependency.
         }

@@ -55,7 +55,6 @@ class EditorForm(dForm):
         self.fileExtension = "cnxml"
         self.defDbPorts = {
             "MySQL": 3306,
-            "Firebird": 3050,
             "PostgreSQL": 5432,
             "MsSQL": 1433,
             "SQLite": None,
@@ -136,7 +135,7 @@ class EditorForm(dForm):
         ctl = dDropdownList(
             self.bg,
             RegID="DbType",
-            Choices=["MySQL", "Firebird", "PostgreSQL", "MsSQL", "SQLite"],
+            Choices=["MySQL", "PostgreSQL", "MsSQL", "SQLite"],
             DataSource="form",
             DataField="dbtype",
             OnHit=self.onDbTypeChanged,
