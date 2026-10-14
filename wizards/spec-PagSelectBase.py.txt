@@ -46,11 +46,23 @@ class SelectionOpDropdown(ui.dDropdownList):
         self.bindEvent(events.ValueChanged, self.onValueChanged)
 
     def onValueChanged(self, evt):
-        # italicize if we are ignoring the field:
+        # Italicize if we are ignoring the field. Changing the font of a
+        # wx.Choice can reset its native selection as a side effect on some
+        # platforms. Use the raw wx GetSelection/SetSelection calls (not the
+        # PositionValue/Value properties) to check for and correct that,
+        # since going through the properties would raise ValueChanged again
+        # and could recurse if this handler ever fires twice in a row (e.g.
+        # SaveRestoreValue's restoreValue() racing afterInit()'s default).
         val = self.StringValue or ""
-        self.FontItalic = (IGNORE_STRING in val)
+        ignoring = IGNORE_STRING in val
+        rawPos = self.GetSelection()
+        self.FontItalic = ignoring
+        if self.GetSelection() != rawPos:
+            self.SetSelection(rawPos)
+            self.Refresh()
+            self.Update()
         if self.Target:
-            self.Target.FontItalic = self.FontItalic
+            self.Target.FontItalic = ignoring
 
     def onChoiceMade(self, evt):
         val = self.StringValue
