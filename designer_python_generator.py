@@ -8,6 +8,8 @@ import ast
 import json
 import os
 
+from dabo.lib.DesignerUtils import getDefaultSizerProps
+
 # Attributes on the form root that are excluded from the generated output
 # (either handled specially or irrelevant at class-definition time).
 _FORM_ATTRS_EXCLUDE = frozenset(
@@ -58,6 +60,11 @@ _SIZER_CLASS = {
     "LayoutBorderSizer": "dBorderSizer",
     "LayoutGridSizer": "dGridSizer",
 }
+
+# Dialogs that add their standard buttons after the user's controls. Their
+# content must be built in addControls() and appended to the dialog's own
+# Sizer; replacing the Sizer in afterInit() would misplace the buttons.
+_STD_BUTTON_DIALOGS = frozenset(["dOkCancelDialog", "dYesNoDialog", "dStandardButtonDialog"])
 
 # Orientation shorthands
 _ORIENTATION_SHORT = {"Vertical": "v", "Horizontal": "h"}
@@ -123,6 +130,12 @@ class DesignerPythonGenerator:
         self._counters = {}  # short_name → next integer
         self._methods = []  # (method_name, method_source) from child controls
         self._last_var = None  # last control var generated (for grid sizer appends)
+        # Orientation ("V", "H", or "G" for grid) of each enclosing sizer; the
+        # designer only saves sizer settings that differ from per-class
+        # defaults that depend on this.
+        self._sizer_types = []
+        # (sizer_var, "row"/"col", index) already set to expand in a grid sizer
+        self._grid_expanded = set()
 
         atts = dct.get("attributes", {})
         base_class = dct.get("name", "dForm")
@@ -138,7 +151,9 @@ class DesignerPythonGenerator:
         class_name = self._make_class_name(base_class, file_stem)
         self._class_name = class_name
 
-        after_init_lines = self._generate_after_init(dct)
+        is_std_dialog = base_class in _STD_BUTTON_DIALOGS
+        self._build_method = "addControls" if is_std_dialog else "afterInit"
+        after_init_lines = self._generate_after_init(dct, is_std_dialog)
         code_dict = dct.get("code", {})
         method_lines = self._generate_methods(code_dict)
         import_block = self._build_import_block(base_class, code_dict)
@@ -150,7 +165,7 @@ class DesignerPythonGenerator:
         lines.append(f"class {class_name}({base_class}):")
 
         if after_init_lines:
-            lines.append("    def afterInit(self):")
+            lines.append(f"    def {self._build_method}(self):")
             for ln in after_init_lines:
                 lines.append("    " + ln if ln.strip() else "")
             lines.append("")
@@ -219,8 +234,8 @@ class DesignerPythonGenerator:
     # afterInit generation
     # ------------------------------------------------------------------
 
-    def _generate_after_init(self, dct: dict) -> list:
-        """Return lines for the afterInit method body (indented 4 spaces)."""
+    def _generate_after_init(self, dct: dict, is_std_dialog: bool = False) -> list:
+        """Return lines for the afterInit (or addControls) body (indented 4 spaces)."""
         lines = []
         atts = dct.get("attributes", {})
 
@@ -244,9 +259,9 @@ class DesignerPythonGenerator:
             child_lines = self._generate_object_code(
                 root_child,
                 parent_var="self",
-                sizer_var=None,
+                sizer_var="self.Sizer" if is_std_dialog else None,
                 indent=1,
-                is_root_sizer=True,
+                is_root_sizer=not is_std_dialog,
             )
             lines.extend(child_lines)
 
@@ -300,11 +315,13 @@ class DesignerPythonGenerator:
         else:
             lines.append(f"{pad}{sz_var} = dSizer({_dq(orient_short)})")
 
+        self._sizer_types.append(orient_short.upper())
         for child in dct.get("children", []):
             lines.extend(self._generate_object_code(child, parent_var, sz_var, indent))
+        self._sizer_types.pop()
 
         if not is_root and sizer_var:
-            si_args = self._sizer_info_to_append_args(atts.get("sizerInfo", "{}"))
+            si_args = self._nested_sizer_append_args(atts, sizer_var)
             lines.append(f"{pad}{sizer_var}.append({sz_var}{si_args})")
             lines.append("")
 
@@ -319,7 +336,8 @@ class DesignerPythonGenerator:
         lines = []
         sz_var = self._next_var("dBorderSizer")
 
-        args = _dq(orient_short)
+        # dBorderSizer draws a dBox on its parent window, so the parent comes first.
+        args = f"{parent_var}, {_dq(orient_short)}"
         if caption:
             args += f", Caption={_dq(caption)}"
 
@@ -328,11 +346,13 @@ class DesignerPythonGenerator:
         else:
             lines.append(f"{pad}{sz_var} = dBorderSizer({args})")
 
+        self._sizer_types.append(orient_short.upper())
         for child in dct.get("children", []):
             lines.extend(self._generate_object_code(child, parent_var, sz_var, indent))
+        self._sizer_types.pop()
 
         if not is_root and sizer_var:
-            si_args = self._sizer_info_to_append_args(atts.get("sizerInfo", "{}"))
+            si_args = self._nested_sizer_append_args(atts, sizer_var)
             lines.append(f"{pad}{sizer_var}.append({sz_var}{si_args})")
             lines.append("")
 
@@ -348,15 +368,23 @@ class DesignerPythonGenerator:
         lines = []
         sz_var = self._next_var("dGridSizer")
 
-        args = f"{rows}, {cols}"
+        # dGridSizer only accepts keyword properties; MaxCols takes precedence,
+        # matching the runtime's own default of filling by columns.
+        if cols not in ("0", ""):
+            args = f"MaxCols={cols}"
+        elif rows not in ("0", ""):
+            args = f"MaxRows={rows}"
+        else:
+            args = ""
         if hgap != "0" or vgap != "0":
-            args += f", HGap={hgap}, VGap={vgap}"
+            args += f"{', ' if args else ''}HGap={hgap}, VGap={vgap}"
 
         if is_root:
             lines.append(f"{pad}{sz_var} = {parent_var}.Sizer = dGridSizer({args})")
         else:
             lines.append(f"{pad}{sz_var} = dGridSizer({args})")
 
+        self._sizer_types.append("G")
         for child in dct.get("children", []):
             child_atts = child.get("attributes", {})
             child_dc = child_atts.get("designerClass", "")
@@ -384,16 +412,24 @@ class DesignerPythonGenerator:
                     ctrl_lines.pop()
                 lines.extend(ctrl_lines)
                 if self._last_var is not None:
-                    si_args = self._sizer_info_to_append_args(child_atts.get("sizerInfo", "{}"))
+                    si = self._control_sizer_info(child.get("name", ""), child_atts)
+                    si_args = self._sizer_info_to_append_args(si)
                     lines.append(
                         f"{pad}{sz_var}.append({self._last_var}{si_args}, row={r}, col={c})"
                     )
+                    for flag, kind, idx in (("RowExpand", "row", r), ("ColExpand", "col", c)):
+                        key = (sz_var, kind, idx)
+                        if si.get(flag) and key not in self._grid_expanded:
+                            self._grid_expanded.add(key)
+                            method = "setRowExpand" if kind == "row" else "setColExpand"
+                            lines.append(f"{pad}{sz_var}.{method}(True, {idx})")
                 lines.append("")
             else:
                 lines.extend(self._generate_object_code(child, parent_var, sz_var, indent))
+        self._sizer_types.pop()
 
         if not is_root and sizer_var:
-            si_args = self._sizer_info_to_append_args(atts.get("sizerInfo", "{}"))
+            si_args = self._nested_sizer_append_args(atts, sizer_var)
             lines.append(f"{pad}{sizer_var}.append({sz_var}{si_args})")
             lines.append("")
 
@@ -478,7 +514,7 @@ class DesignerPythonGenerator:
 
         # Append to containing sizer
         if sizer_var:
-            si_args = self._sizer_info_to_append_args(atts.get("sizerInfo", "{}"))
+            si_args = self._sizer_info_to_append_args(self._control_sizer_info(name, atts))
             lines.append(f"{pad}{sizer_var}.append({var}{si_args})")
 
         lines.append("")
@@ -606,6 +642,35 @@ class DesignerPythonGenerator:
 
         return val_str
 
+    def _nested_sizer_append_args(self, atts: dict, sizer_var: str) -> str:
+        """
+        Return the .append() arguments for a sizer nested in another sizer. A
+        design's root sizer placed in a standard-button dialog's own Sizer fills
+        it, as DesignerClassConverter does, so the buttons stay at the bottom.
+        """
+        si_args = self._sizer_info_to_append_args(atts.get("sizerInfo", "{}"))
+        if sizer_var == "self.Sizer" and not si_args:
+            si_args = ', proportion=1, layout="expand"'
+        return si_args
+
+    def _control_sizer_info(self, ctrl_name: str, atts: dict) -> dict:
+        """
+        Return the effective sizer settings for a control: the designer's
+        per-class defaults for the enclosing sizer type, overridden by the
+        values saved in the design. This mirrors DesignerClassConverter, which
+        is what runs .cdxml designs.
+        """
+        si = atts.get("sizerInfo", "{}")
+        if isinstance(si, str):
+            try:
+                si = ast.literal_eval(si) if si else {}
+            except (ValueError, SyntaxError):
+                si = {}
+        typ = self._sizer_types[-1] if self._sizer_types else "H"
+        merged = getDefaultSizerProps(ctrl_name, typ)
+        merged.update(si or {})
+        return merged
+
     def _sizer_info_to_append_args(self, si_str) -> str:
         """Convert a sizerInfo string or dict to .append() keyword arguments."""
         if not si_str or si_str == "{}":
@@ -637,12 +702,14 @@ class DesignerPythonGenerator:
         if proportion:
             parts.append(f"proportion={proportion}")
         if expand:
-            parts.append("expand=True")
-        if halign != "Left":
+            parts.append('layout="expand"')
+        # An expanded item fills its space, so alignment is meaningless; wxPython
+        # 4.2+ also raises an assertion if the two are combined.
+        if not expand and halign.lower() != "left":
             parts.append(f"halign={_dq(halign.lower())}")
-        if valign != "Top":
+        if not expand and valign.lower() != "top":
             parts.append(f"valign={_dq(valign.lower())}")
-        if border_sides != ["All"]:
+        if [side.lower() for side in border_sides] != ["all"]:
             parts.append(f"borderSides={json.dumps(border_sides)}")
 
         if not parts:
@@ -664,12 +731,12 @@ class DesignerPythonGenerator:
         for mname, mcode in sorted(code_dict.items()):
             if mname == "importStatements":
                 continue
-            if mname == "afterInit":
+            if mname == self._build_method:
                 all_lines.append(
-                    "    # NOTE: original afterInit renamed to avoid conflict "
+                    f"    # NOTE: original {mname} renamed to avoid conflict "
                     "with the generated one."
                 )
-                mcode = mcode.replace("def afterInit(", "def _orig_afterInit(", 1)
+                mcode = mcode.replace(f"def {mname}(", f"def _orig_{mname}(", 1)
             all_lines.extend(self._format_method(mcode))
             all_lines.append("")
 

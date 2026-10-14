@@ -308,8 +308,11 @@ class ClassDesigner(dApp):
         clsOK = False
         if clsFile:
             clsFile = clsFile[0] if isinstance(clsFile, list) else clsFile
-            if not (clsFile.endswith(".cdxml") or clsFile.endswith(".py")):
-                clsFile += ".py"
+            if not (
+                clsFile.endswith(".cdxml") or clsFile.endswith(".json") or clsFile.endswith(".py")
+            ):
+                # JSON is the default class-design format.
+                clsFile += ".json"
             try:
                 frm = self.openClass(clsFile)
                 clsOK = True
@@ -676,12 +679,6 @@ class ClassDesigner(dApp):
             self._updateClassCodeRepository(sc)
         return dct
 
-    def _importClassPython(self, pth):
-        """Read a Python class file and return a designer dict."""
-        from designer_python_parser import DesignerPythonParser
-
-        return DesignerPythonParser().dict_from_python_file(pth)
-
     def _updateClassCodeRepository(self, dct):
         """Take a flattened dict of class IDs and store any code
         associated with those IDs, so that we can later compare it to
@@ -736,9 +733,10 @@ class ClassDesigner(dApp):
 
     def openClass(self, pth):
         """Called when the user selects the 'Open' menu and selects
-        a saved XML file. We need to open the file, and confirm that it is
-        indeed a valid class file. If so, we then re-construct the class in
-        a new ClassDesigner window.
+        a saved class design file (JSON by default; legacy .cdxml XML
+        files are also still readable). We need to open the file, and
+        confirm that it is indeed a valid class file. If so, we then
+        re-construct the class in a new ClassDesigner window.
         """
         # Set the flag so that components know what process we're in.
         self.openingClassXML = True
@@ -748,11 +746,10 @@ class ClassDesigner(dApp):
         pth = libutils.resolvePathAndUpdate(pth)
         # Add to the MRU list
         self.addMRUPath(pth)
-        # Translate the file path into a class dictionary.
-        if pth.endswith(".py"):
-            clsd = self._importClassPython(pth)
-        else:
-            clsd = self._importClassXML(pth)
+        # Translate the file path into a class dictionary. JSON is the
+        # default class-design format; legacy .cdxml (XML) files are still
+        # readable via the same converter.
+        clsd = self._importClassXML(pth)
         importStatements = clsd.pop("importStatements", "")
         if not importStatements:
             # If stored in a single file, 'importStatements' will be in the outermost 'code' dict.
@@ -869,8 +866,10 @@ class ClassDesigner(dApp):
             # Restore any prop definitions.
             if propDefs:
                 self._classPropDict[frm] = propDefs
-            # Set the child objects
-            kids = clsd["children"]
+            # Set the child objects. A form with nothing added to it yet
+            # (e.g. a freshly scaffolded blank form) has no "children" key
+            # at all.
+            kids = clsd.get("children", [])
         else:
             # Add the class to the form
             kids = clsd
@@ -2061,7 +2060,7 @@ class ClassDesigner(dApp):
         self.biz = currbiz
 
     def onOpenDesign(self, evt):
-        ff = ui.getFile("cdxml", "py")
+        ff = ui.getFile("cdxml", "json", "py")
         if ff:
             self.openClass(ff)
             ui.callAfterInterval(100, self.updateLayout)
@@ -2074,7 +2073,7 @@ class ClassDesigner(dApp):
                 self.fileToOpen = None
 
                 def onOpenSaved(evt):
-                    f = ui.getFile("cdxml", "py")
+                    f = ui.getFile("cdxml", "json", "py")
                     if f:
                         self.fileToOpen = f
                         self._onOK(None)

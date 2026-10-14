@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import codecs
+import json
 import os
 import random
 import sys
@@ -505,13 +506,13 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
         return self._classFile
 
     def onSaveAsDesign(self, evt):
-        self._classFile = ui.getSaveAs(wildcard="py")
+        self._classFile = ui.getSaveAs(wildcard="json")
         if not self._classFile:
             # User canceled
             return
         self._classFile = self._classFile.rstrip(".")
-        if not self._classFile.endswith(".py"):
-            self._classFile += ".py"
+        if not self._classFile.endswith((".json", ".cdxml")):
+            self._classFile += ".json"
         self._savedState = {}
         self.onSaveDesign(evt)
 
@@ -519,27 +520,23 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
         currForm = self.Controller.CurrentForm
         newFile = False
 
-        # Replace this with a setting of some sort
-        self.useJSON = False
-        fileExt = {True: "json", False: "cdxml"}[self.useJSON]
-
         if useTmp:
             osp = os.path
             if self._classFile:
                 loc = os.path.split(self._classFile)[0]
             else:
                 loc = os.getcwd()
-            fname = self.Application.getTempFile("cdxml", directory=loc)
+            fname = self.Application.getTempFile("json", directory=loc)
         else:
             if not self._classFile:
-                self._classFile = ui.getSaveAs(wildcard="py")
+                self._classFile = ui.getSaveAs(wildcard="json")
                 if not self._classFile:
                     # User canceled
                     return
                 else:
                     self._classFile = self._classFile.rstrip(".")
-                    if not self._classFile.endswith(".py"):
-                        self._classFile += ".py"
+                    if not self._classFile.endswith((".json", ".cdxml")):
+                        self._classFile += ".json"
                 newFile = True
             fname = self._classFile
 
@@ -567,35 +564,32 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
             cd = propDict.get("code", {})
             cd.update({"importStatements": imp})
             propDict["code"] = cd
-        # Save as Python if the target file is .py and not a temp file
-        save_as_python = fname.endswith(".py") and not useTmp
-        if save_as_python and self._formMode:
-            from designer_python_generator import DesignerPythonGenerator
-
-            file_stem = os.path.splitext(os.path.basename(fname))[0]
-            gen = DesignerPythonGenerator()
-            textToSave = gen.generate(propDict, file_stem=file_stem)
-            # Try opening the file. If it is read-only, it will raise an IOError.
-            codecs.open(fname, "w", encoding="utf-8").write(textToSave)
+        # JSON handles embedded text fine, so there's no need to split code
+        # out to a companion "-code.py" file the way .cdxml historically
+        # did. .cdxml keeps the old split-file behavior by default (still
+        # overridable via the saveCodeInXML setting) for backward
+        # compatibility.
+        singleFile = useTmp or fname.endswith(".json") or self.Application.getUserSetting(
+            "saveCodeInXML", False
+        )
+        if not singleFile:
+            propDict, codeDict = self._extractCodeFromPropDict(propDict)
+        if fname.endswith(".cdxml"):
+            textToSave = xtd.dicttoxml(propDict)
         else:
-            singleFile = useTmp or self.Application.getUserSetting("saveCodeInXML", False)
-            if not singleFile:
-                propDict, codeDict = self._extractCodeFromPropDict(propDict)
-            if self.useJSON:
-                textToSave = pformat(propDict)
-            else:
-                textToSave = xtd.dicttoxml(propDict)
-            # Try opening the file. If it is read-only, it will raise an IOError.
-            codecs.open(fname, "wb", encoding="utf-8").write(textToSave)
-            cfName = f"{os.path.splitext(fname)[0]}-code.py"
-            if singleFile:
-                # Delete the code file if present.
-                if os.path.exists(cfName):
-                    os.remove(cfName)
-            else:
-                # Write out the code file
-                desCode = self._createDesignerCode(codeDict)
-                codecs.open(cfName, "w", encoding="utf-8").write(desCode)
+            # JSON is the default class-design format.
+            textToSave = json.dumps(propDict, indent=4)
+        # Try opening the file. If it is read-only, it will raise an IOError.
+        codecs.open(fname, "wb", encoding="utf-8").write(textToSave)
+        cfName = f"{os.path.splitext(fname)[0]}-code.py"
+        if singleFile:
+            # Delete the code file if present.
+            if os.path.exists(cfName):
+                os.remove(cfName)
+        else:
+            # Write out the code file
+            desCode = self._createDesignerCode(codeDict)
+            codecs.open(cfName, "w", encoding="utf-8").write(desCode)
         if newFile:
             self.Controller.addMRUPath(fname)
         if currForm:
