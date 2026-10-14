@@ -569,8 +569,10 @@ class ClassDesignerFormMixin(LayoutSaverMixin):
         # did. .cdxml keeps the old split-file behavior by default (still
         # overridable via the saveCodeInXML setting) for backward
         # compatibility.
-        singleFile = useTmp or fname.endswith(".json") or self.Application.getUserSetting(
-            "saveCodeInXML", False
+        singleFile = (
+            useTmp
+            or fname.endswith(".json")
+            or self.Application.getUserSetting("saveCodeInXML", False)
         )
         if not singleFile:
             propDict, codeDict = self._extractCodeFromPropDict(propDict)
